@@ -9,15 +9,18 @@
 5. Compile your code
 ```truffle compile```
 6. Update the truffle-config.js by adding this part under "networks":
-```  development: {
+```shell
+    development: {
      host: "127.0.0.1",     // Localhost (default: none)
      port: 9545,            // Standard Ethereum port (default: none)
      network_id: "*",       // Any network (default: none)
-    },```
+    },
+```
 7. Run ```truffle develop```
 8. In order to deploy create a "deployment.js" under "/migrations"
-```const PayBackToken = artifacts.require("3_PayBackToken");
-	
+```shell
+const PayBackToken = artifacts.require("3_PayBackToken");
+
 module.export = function(deployer) {
     deployer.deploy(PayBackToken);
 }
