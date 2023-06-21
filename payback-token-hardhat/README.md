@@ -57,7 +57,7 @@ main().catch((error) => {
 });
 ```
 4. Go to hardhat.config.js and update it by adding this part under "networks":
-``````shell
+```shell
 goerli:{
       url:process.env.INFURA_GOERLI_ENDPOINT,
       accounts:[process.env.PRIVATE_KEY]
