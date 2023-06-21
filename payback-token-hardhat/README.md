@@ -29,14 +29,14 @@ npx hardhat run scripts/deploy.js
 9. To compile your code run 
 ```npx hardhat compile```
 
-To deploy to the Goerli Testnet:
+## To deploy to the Goerli Testnet:
 1. create .env file
 ```PRIVATE_KEY=0119...
 INFURA_GOERLI_ENDPOINT=https://goerli.infura.io/v3/e626...```
 2. Install dotenv
 ```npm i dotenv```
 3. Go to /scripts/deploy.js and change the file:
-```
+``````shell
 const hre = require("hardhat");
 
 async function main() {
@@ -53,10 +53,9 @@ main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
-
 ```
 4. Go to hardhat.config.js and update it by adding this part under "networks":
-```
+``````shell
 goerli:{
       url:process.env.INFURA_GOERLI_ENDPOINT,
       accounts:[process.env.PRIVATE_KEY]
