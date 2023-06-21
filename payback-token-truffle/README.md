@@ -1,6 +1,6 @@
 # Running Smart Contracts with Truffle
 
-1. Create a folder "payback-token-truffle"
+1. Create a folder "payback-token-truffle" and navigate there.
 2. Install Truffle
 ```npm i truffle -g```
 3. Create initial project
