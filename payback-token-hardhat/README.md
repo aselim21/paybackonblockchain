@@ -31,8 +31,10 @@ npx hardhat run scripts/deploy.js
 
 ## To deploy to the Goerli Testnet:
 1. create .env file
-```PRIVATE_KEY=0119...
-INFURA_GOERLI_ENDPOINT=https://goerli.infura.io/v3/e626...```
+``````shell
+PRIVATE_KEY=0119...
+INFURA_GOERLI_ENDPOINT=https://goerli.infura.io/v3/e626...
+```
 2. Install dotenv
 ```npm i dotenv```
 3. Go to /scripts/deploy.js and change the file:
