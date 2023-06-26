@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing Truffle Frontend</title>
+    <!-- <script src="indexethers.js" type="module"></script> -->
+    <!-- <script language="javascript" type="text/javascript" src="indexethers.js"></script> -->
+    <!-- <script language="javascript" type="text/javascript" src="web3.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.8.0/web3.min.js"
+        integrity="sha512-bSQ2kf76XufUYS/4XinoHLp5S4lNOyRv0/x5UJACiOMy8ueqTNwRFfUZWmWpwnczjRp9SjiF1jrXbGEim7Y0Xg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="global_var.js"></script>
+</head>
+
+<body>
+    <h1>Kaufland Website</h1>
+    <h2>3. Step: The Client buys something and Kaufland sends him Tokens</h2>
+    <h3>Without the authentification as a registered user for PayBack</h3>
+
+    <button onclick="getContractOwner()"> Get the Contract Owner </button>
+    <h2>...................................................................................................</h2>
+
+    <h2>Your order: 50 Euro</h2>
+    <h3>You have a PayBack NFT?</h3>
+    <button onclick="connectMetamaskWallet()">Connect your Metamask Wallet</button>
+    <button onclick="getTokenBalanceOf(PUBLIC_KEY_CLIENT_METAMASK)"> Check your Token balance </button>
+    <p>If connected through Metamask we need to check if you have NFT from PayBack and if yes, get your account public
+        key.</p>
+    <p>IN THIS STAGE: You still don't have NFT, so only connect wallet and get the accounts public key.</p>
+
+    <button onclick="calcPointsToEarn(50,0)"> Calculate Tokens to earn </button>
+    <button onclick="buy(50)"> Buy </button>
+
+    <h3>After the purchase is done and the tokens are sent to the client, he can check his balance again</h3>
+    <button onclick="getTokenBalanceOf(PUBLIC_KEY_CLIENT_METAMASK)"> Check your Token balance </button>
+
+    <script>
+
+        //select the partner
+        const PUBLIC_KEY_PARTNER = PUBLIC_KEY_KAUFLAND;
+        const PRIVATE_KEY_PARTNER = PRIVATE_KEY_KAUFLAND;
+
+        let PUBLIC_KEY_CLIENT_METAMASK;
+        const web3 = new Web3(new Web3.providers.HttpProvider(BLOCKCHAIN_URL));
+        web3.eth.handleRevert = true;
+        // web3.eth.accounts.privateKeyToAccount(PUBLIC_KEY_PARTNER);
+
+
+        async function getContractOwner() {
+            const contract_build = await fetch(ABI_fileLink);
+            const CONTRACT_ABI = await contract_build.json();
+            const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+            PayBackContract.methods.getOwner().call((err, result) => { console.log(result) })
+        }
+
+        async function connectMetamaskWallet() {
+            //check what kind of wallet is installed:
+            const walletExt = getCurrentProvider();
+            console.log("Wallet defected:", walletExt);
+
+            if (walletExt == "metamask") {
+                if (window.ethereum !== null) {
+                    // web3 = new Web3(window.ethereum)
+                    try {
+                        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+                        const account = accounts[0];
+                        console.log("You are now connected with account: ", account);
+                        PUBLIC_KEY_CLIENT_METAMASK = account;
+                        return account;
+                    } catch (error) {
+                        console.log("There was an error connecting the wallet");
+                    }
+                }
+            } else {
+                //not in scope of this project
+            }
+
+        }
+        function getCurrentProvider() {
+            if (!window.web3) return 'unknown';
+
+            if (window.web3.currentProvider.isMetaMask)
+                return 'metamask';
+
+            if (window.web3.currentProvider.isTrust)
+                return 'trust';
+
+            if (window.web3.currentProvider.isGoWallet)
+                return 'goWallet';
+
+            if (window.web3.currentProvider.isAlphaWallet)
+                return 'alphaWallet';
+
+            if (window.web3.currentProvider.isStatus)
+                return 'status';
+
+            if (window.web3.currentProvider.isToshi)
+                return 'coinbase';
+
+            if (typeof window.__CIPHER__ !== 'undefined')
+                return 'cipher';
+
+            if (window.web3.currentProvider.constructor.name === 'EthereumProvider')
+                return 'mist';
+
+            if (window.web3.currentProvider.constructor.name === 'Web3FrameProvider')
+                return 'parity';
+
+            if (window.web3.currentProvider.host && window.web3.currentProvider.host.indexOf('infura') !== -1)
+                return 'infura';
+
+            if (window.web3.currentProvider.host && window.web3.currentProvider.host.indexOf('localhost') !== -1)
+                return 'localhost';
+
+            return 'unknown';
+        }
+        // function getBalanceOf() {
+        //     if (PUBLIC_KEY_CLIENT_METAMASK) {
+        //         const web3 = new Web3(new Web3.providers.HttpProvider(BLOCKCHAIN_URL));
+
+        //         web3.eth.getBalance(PUBLIC_KEY_CLIENT_METAMASK, (err, wei) => {
+        //             balance = web3.utils.fromWei(wei, 'ether')
+        //             console.log(balance)
+        //         })
+        //     } else {
+        //         console.log("Connect your metamask wallet first")
+        //     }
+
+        // }
+
+        async function getTokenBalanceOf(_addr) {
+            const contract_build = await fetch(ABI_fileLink);
+            const CONTRACT_ABI = await contract_build.json();
+            const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+            try {
+                const res = await PayBackContract.methods.balanceOf(_addr).call();
+                console.log(res)
+                return res;
+            } catch (err) {
+                console.error(err)
+            }
+
+        }
+
+        async function buy(_purchaseAmount) {
+            if (PUBLIC_KEY_CLIENT_METAMASK) {
+                const nr_tokens = await calcPointsToEarn(_purchaseAmount, 0);
+                console.log("Calculated tokens to get: ", nr_tokens);
+                await transferFromPartner(PUBLIC_KEY_CLIENT_METAMASK, nr_tokens);
+
+                //TODO:
+                //first check if there is the NFT of the user
+                //second send the user tokens
+                //I as a partner should have some ether to support the transactions
+                //I should send the tokens
+
+            }
+        }
+
+        async function transferFromPartner(_to, _amount) {
+            const contract_build = await fetch(ABI_fileLink);
+            const CONTRACT_ABI = await contract_build.json();
+            const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+            const encoded = PayBackContract.methods.transfer(_to, _amount).encodeABI();
+
+            var tx = {
+                from: PUBLIC_KEY_PARTNER,
+                to: CONTRACT_ADDRESS,
+                gas: web3.utils.toHex(3000000), // 30400
+                // gasPrice: '0x9184e72a000', // 10000000000000
+                // value: '', // 2441406250 web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+                data: encoded
+            }
+
+            web3.eth.accounts.signTransaction(tx, PRIVATE_KEY_PARTNER).then(signed => {
+                tx_sent = web3.eth.sendSignedTransaction(signed.rawTransaction)
+                tx_sent.on("receipt", receipt => {
+                    console.log("received recepit", receipt);
+                    return true;
+                });
+                tx_sent.on("error", err => {
+                    console.error("there was an error");
+                    console.error(err);
+                    return false;
+                });
+            });
+
+        }
+
+        async function calcPointsToEarn(_purchaseValue, _partnerID) {
+            const contract_build = await fetch(ABI_fileLink);
+            const CONTRACT_ABI = await contract_build.json();
+            const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+            try {
+                const res = await PayBackContract.methods.calcPointsToEarn(_purchaseValue, _partnerID).call();
+                console.log(res)
+                return res;
+            } catch (err) {
+                console.error(err)
+            }
+
+            // contract.methods.calcPointsToEarn(_purchaseValue, _partnerID).call((err, result) => { return result })
+        }
+        //-----------------------------------------------------------------------------------------------------------------
+
+    </script>
+
+
+</body>
+
+</html>

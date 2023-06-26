@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing Truffle Frontend</title>
+    <!-- <script src="indexethers.js" type="module"></script> -->
+    <!-- <script language="javascript" type="text/javascript" src="indexethers.js"></script> -->
+    <!-- <script language="javascript" type="text/javascript" src="web3.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.8.0/web3.min.js"
+        integrity="sha512-bSQ2kf76XufUYS/4XinoHLp5S4lNOyRv0/x5UJACiOMy8ueqTNwRFfUZWmWpwnczjRp9SjiF1jrXbGEim7Y0Xg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="global_var.js"></script>
+</head>
+
+<body>
+    <h1>PayBack Website</h1>
+    <h2>1. Step: Register "Kaufland" as a partner in our Loyalty programm</h2>
+
+    <button onclick="getContractOwner()"> Get the Contract Owner </button>
+    <h2>...................................................................................................</h2>
+
+    <h2>Create Kaufland as a Partner - EUR, 2</h2>
+    <button onclick="registerPartner('Kaufland', PUBLIC_KEY_KAUFLAND, 'EUR', 2)"> Register Kaufland </button>
+    <h3>Read the Partner 0 from the blockchain</h3>
+    <button onclick="getPartner(0)"> Get the Partner 0</button>
+    <h3>Send the 100 Tokens to Partner 0 - Kaufland</h3>
+    <button onclick="transferFromContractOwner(PUBLIC_KEY_KAUFLAND, 100)"> Send 100 to Kaufland </button>
+    <h3>Read the Token balance of Partner 0 - Kaufland</h3>
+    <button onclick="getTokenBalanceOf(PUBLIC_KEY_KAUFLAND)"> Get Balance of Kaufland </button>
+
+    <h2>Create DM as a Partner - EUR, 1</h2>
+    <button onclick="registerPartner('DM', PUBLIC_KEY_DM, 'EUR', 1)"> Register DM</button>
+    <h3>Read the Partner 1 from the blockchain</h3>
+    <button onclick="getPartner(1)"> Get the Partner 1</button>
+    <h3>Send the 100 Tokens to Partner 1 - DM</h3>
+    <button onclick="transferFromContractOwner(PUBLIC_KEY_DM, 100)"> Send 100 tokens to DM</button>
+    <h3>Read the Token balance of Partner 1 - DM</h3>
+    <button onclick="getTokenBalanceOf(PUBLIC_KEY_DM)"> Get Balance of DM </button>
+
+    <h2>Read not existing partners</h2>
+    <button onclick="getPartner(2)"> Get the Partner 2</button>
+    <button onclick="getPartner(3)"> Get the Partner 3</button>
+
+    <script>
+        const web3 = new Web3(new Web3.providers.HttpProvider(BLOCKCHAIN_URL));
+        web3.eth.accounts.privateKeyToAccount(PRIVATE_KEY_PayBack);
+
+
+        async function getContractOwner() {
+            const contract_build = await fetch(ABI_fileLink);
+            const CONTRACT_ABI = await contract_build.json();
+            const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+            PayBackContract.methods.getOwner().call((err, result) => { console.log(result) })
+        }
+
+        async function registerPartner(_name, _addr, _currency, _valueForOne) {
+
+            const contract_build = await fetch(ABI_fileLink);
+            const CONTRACT_ABI = await contract_build.json();
+            const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+            const encoded = PayBackContract.methods.addPartner(_name, _addr, _currency, _valueForOne).encodeABI()
+
+            var tx = {
+                from: PUBLIC_KEY_PayBack,
+                to: CONTRACT_ADDRESS,
+                gas: web3.utils.toHex(545200), // 30400
+                gasPrice: '0x9184e72a000', // 10000000000000
+                // value: '', // 2441406250 web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+                data: encoded
+            }
+
+            web3.eth.accounts.signTransaction(tx, PRIVATE_KEY_PayBack).then(signed => {
+                tx_sent = web3.eth.sendSignedTransaction(signed.rawTransaction)
+                tx_sent.on("receipt", receipt => {
+                    console.log("received recepit", receipt);
+                });
+                tx_sent.on("error", err => {
+                    console.error("there was an error");
+                    console.error(err);
+                });
+            });
+        }
+
+        async function getPartner(_id) {
+            const contract_build = await fetch(ABI_fileLink);
+            const CONTRACT_ABI = await contract_build.json();
+            const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+            PayBackContract.methods.partners(_id).call((err, result) => { console.log(result) })
+        }
+        async function sendTokensToKaufland() {
+            transferFromContractOwner(PUBLIC_KEY_KAUFLAND, 100);
+        }
+
+        async function transferFromContractOwner(_to, _amount) {
+            const contract_build = await fetch(ABI_fileLink);
+            const CONTRACT_ABI = await contract_build.json();
+            const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+            const encoded = PayBackContract.methods.transfer(_to, _amount).encodeABI();
+
+            var tx = {
+                from: PUBLIC_KEY_PayBack,
+                to: CONTRACT_ADDRESS,
+                gas: web3.utils.toHex(3000000), // 30400
+                // gasPrice: '0x9184e72a000', // 10000000000000
+                // value: '', // 2441406250 web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+                data: encoded
+            }
+            console.log(tx)
+
+            web3.eth.accounts.signTransaction(tx, PRIVATE_KEY_PayBack).then(signed => {
+                tx_sent = web3.eth.sendSignedTransaction(signed.rawTransaction)
+                tx_sent.on("receipt", receipt => {
+                    console.log("received recepit", receipt);
+                });
+                tx_sent.on("error", err => {
+                    console.log("there was an error");
+                    console.error(err);
+                });
+            });
+
+        }
+
+        async function getTokenBalanceOf(_addr) {
+            const contract_build = await fetch(ABI_fileLink);
+            const CONTRACT_ABI = await contract_build.json();
+            const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+            try {
+                const res = await PayBackContract.methods.balanceOf(_addr).call();
+                console.log(res)
+                return res;
+            } catch (err) {
+                console.error(err)
+            }
+
+        }
+
+        //-----------------------------------------------------------------------------------------------------------------
+
+    </script>
+</body>
+
+</html>
