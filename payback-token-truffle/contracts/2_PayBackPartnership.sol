@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.19;
 
-// import "hardhat/console.sol";
 import "./1_Owner.sol";
 
 library SafeMath {
@@ -70,11 +69,11 @@ contract PayBackPartnership is Owner{
         require(_addr != address(0), "Entered address is null.");
         _;
     }
-    modifier addrIsPartner(address _addr) {
-        Partner storage p = addrToPartner[_addr];
-        require(p.walletAddr != address(0), "Entered address is not a partner!");
-        _;
-    }
+    // modifier addrIsPartner(address _addr) {
+    //     Partner storage p = addrToPartner[_addr];
+    //     require(p.walletAddr != address(0), "Entered address is not a partner!");
+    //     _;
+    // }
 
     //-------------------------Events-------------------------
 

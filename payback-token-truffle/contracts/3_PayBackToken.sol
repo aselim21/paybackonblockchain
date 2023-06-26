@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./2_PayBackPartnership.sol";
-
 
 contract PayBackToken is IERC20, PayBackPartnership {
     using SafeMath for uint256;
@@ -71,18 +70,22 @@ contract PayBackToken is IERC20, PayBackPartnership {
     function transfer(address _to, uint256 _amount)
         public
         addrNotNull(_to)
-        isOwner
-        addrIsPartner(_to)
         returns (bool)
     {
-        //the to addr shouldnt be zero
-        // the amount should be as much is available
-        //only the owner can distribute Tokens to its partners
-        //check if the address is partner
-        address from = _owner;
-        _balances[from] = _balances[from].sub(_amount);
+        //there are 2 cases!
+        // check if the msg.sender is owner or partner
+        Partner storage p = addrToPartner[msg.sender];
+        require(
+            msg.sender == _owner || msg.sender == p.walletAddr,
+            "Only the owner or partners can transfer tokens."
+        );
+
+        //CASE 1: Contract Owner Payback wants to send his partner some tokens
+        //CASE 2: Partner wants to sent his client some tokens
+        _balances[msg.sender] = _balances[msg.sender].sub(_amount);
         _balances[_to] = _balances[_to].add(_amount);
-        emit Transfer(from, _to, _amount);
+
+        emit Transfer(msg.sender, _to, _amount);
 
         return true;
     }
@@ -126,7 +129,6 @@ contract PayBackToken is IERC20, PayBackPartnership {
         address _to,
         uint256 _amount
     ) public returns (bool) {
-
         //you allow someone to spend your tokens
         //
         //TODO who can start this function????

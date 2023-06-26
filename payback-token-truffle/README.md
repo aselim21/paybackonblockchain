@@ -17,13 +17,14 @@
     },
 ```
 7. Run ```truffle develop```
-8. In order to deploy create a "deployment.js" under "/migrations"
+8. In order to deploy create a "2_deploy_contracts.js" under "/migrations"
 ```shell
-const PayBackToken = artifacts.require("3_PayBackToken");
-
-module.export = function(deployer) {
-    deployer.deploy(PayBackToken);
+const PayBackToken = artifacts.require("PayBackToken");
+	
+module.exports = function(deployer) {
+    deployer.deploy(PayBackToken, "PayBackToken", "PBT", 1000, 0);
 }
 ```
 9. Run ```truffle migrate --network development```
+9.1. To fix issues ```truffle migrate --reset```
 10. To run tests ```truffle test```
