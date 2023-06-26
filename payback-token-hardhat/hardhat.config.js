@@ -1,5 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
-require("../payback-token-truffle/node_modules/dotenv/lib/main").config();
+require("../payback-token-hardhat/node_modules/dotenv/lib/main").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -9,10 +9,10 @@ module.exports = {
       url:process.env.INFURA_GOERLI_ENDPOINT,
       accounts:[process.env.PRIVATE_KEY]
     },
-    development:{
-      host:"localhost",
-      port:9545,
-      network_id:"*"
-  }
+  //   development:{
+  //     host:"localhost",
+  //     port:9545,
+  //     network_id:"*"
+  // }
   }
 };
