@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing Truffle Frontend</title>
+    <!-- <script src="indexethers.js" type="module"></script> -->
+    <!-- <script language="javascript" type="text/javascript" src="indexethers.js"></script> -->
+    <!-- <script language="javascript" type="text/javascript" src="web3.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.8.0/web3.min.js"
+        integrity="sha512-bSQ2kf76XufUYS/4XinoHLp5S4lNOyRv0/x5UJACiOMy8ueqTNwRFfUZWmWpwnczjRp9SjiF1jrXbGEim7Y0Xg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.6.0/ethers.umd.min.js"
+        integrity="sha512-Mr0Dky4WkyOWzAg18CZBK82FBLDigdWaHJMPDjVqCgQtjNr8ni5N5ec6jYYt83MbOU661aD9QxvUHTsyn0ZhZQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+    <h1>Hi</h1>
+    <button onclick="console.log(getCurrentProvider())"> Get the current provider </button>
+    <button onclick="connectWallet()"> Connect your wallet </button>
+    <button onclick="createPartner()"> Create Partner </button>
+    <button onclick="sendEthFromFirstToSecond()"> Sends 0.1 ETH from first to second account </button>
+    <button onclick="getBalanceOf('0x5178d8654301ab965fbcb031b5c4ed8b3ec598d2')"> Get Balance of first account</button>
+    <button onclick="getBalanceOf('0x950ac95fbaf3a4e59f76b71cb38f4e68e561c2ae')"> Get Balance of second account</button>
+    <button onclick="getTotalSupply()"> Get totoal supply </button>
+    <h1>Ethers:</h1>
+    <button onclick="ethers_createPartner()"> Create a partner </button>
+    <button onclick="ethers_getPartner()"> Get partner </button>
+
+    <script>
+
+        function getCurrentProvider() {
+            if (!window.web3) return 'unknown';
+
+            if (window.web3.currentProvider.isMetaMask)
+                return 'metamask';
+
+            if (window.web3.currentProvider.isTrust)
+                return 'trust';
+
+            if (window.web3.currentProvider.isGoWallet)
+                return 'goWallet';
+
+            if (window.web3.currentProvider.isAlphaWallet)
+                return 'alphaWallet';
+
+            if (window.web3.currentProvider.isStatus)
+                return 'status';
+
+            if (window.web3.currentProvider.isToshi)
+                return 'coinbase';
+
+            if (typeof window.__CIPHER__ !== 'undefined')
+                return 'cipher';
+
+            if (window.web3.currentProvider.constructor.name === 'EthereumProvider')
+                return 'mist';
+
+            if (window.web3.currentProvider.constructor.name === 'Web3FrameProvider')
+                return 'parity';
+
+            if (window.web3.currentProvider.host && window.web3.currentProvider.host.indexOf('infura') !== -1)
+                return 'infura';
+
+            if (window.web3.currentProvider.host && window.web3.currentProvider.host.indexOf('localhost') !== -1)
+                return 'localhost';
+
+            return 'unknown';
+        }
+        async function connectWallet() {
+            let my_addr;
+            if (window.ethereum != null) {
+                // console.log(window.ethereum)
+                const web33 = new Web3(window.ethereum)
+                try {
+                    // Request account access if needed
+                    const res = await window.ethereum.enable();
+                    // window.ethereum.sendAsync('eth_requestAccounts'); or window.ethereum.eth_requestAccounts()
+                    // THIS WILL NOT WORK IN THE FUTURE window.ethereum.enable();
+                    my_addr = res[0];
+                    console.log("Wallet is connected: ", my_addr);
+                    return my_addr;
+                    // Acccounts now exposed
+                } catch (error) {
+                    // User denied account access...
+                    console.log("There was an error connecting the wallet");
+                }
+            }
+        }
+        // const ADDR_SENDER = connectWallet();
+        async function createPartner() {
+            const BLOCKCHAIN_URL = "http://127.0.0.1:9545/";
+            // const BLOCKCHAIN_URL = "https://goerli.infura.io/v3/aa9588cdda9c4267a22d025ab87a3e5d";
+            const PAYBACK_CONTRACT_ADDRESS = "0x3e0A102d401672c014b47a4328abe39964BAe704";
+            const ABI_fileLink = "./ABI_PayBackToken.json";
+
+            const web3 = new Web3(new Web3.providers.HttpProvider(BLOCKCHAIN_URL));
+            const contract_build = await fetch(ABI_fileLink);
+            const CONTRACT_ABI = await contract_build.json();
+            // const CONTRACT_ABI = constract_build_json;
+            // console.log(CONTRACT_ABI)
+
+            const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, PAYBACK_CONTRACT_ADDRESS);
+            console.log(PayBackContract)
+
+            //create transaction 
+            // let params = [{
+            //     from: '0xb60e8dd61c5d32be8058bb8eb970870f07233155',
+            //     to: '0xd46e8dd67c5d32be8058bb8eb970870f07244567',
+            //     gas: '0x76c0', // 30400
+            //     gasPrice: '0x9184e72a000', // 10000000000000
+            //     value: '0x9184e72a', // 2441406250
+            //     data:
+            //         '0xd46e8dd67c5d32be8d46e8dd67c5d32be8058bb8eb970870f072445675058bb8eb970870f072445675',
+            // }]
+            // let result = await window.ethereum.request({ method: "sendTransaction", params }).catch((err) => { console.log(err) })
+            const PUBLIC_KEY_PayBack = "0x5178d8654301ab965fbcb031b5c4ed8b3ec598d2";
+            const PRIVATE_KEY_PayBack = "775ed2edb7cfc8246e322bd5cc502348a6c132a5ee3517ec2939b43f6371caad"
+
+            const PUBLIC_KEY_SecondAcc = "0x950ac95fbaf3a4e59f76b71cb38f4e68e561c2ae";
+
+
+            // web3.eth.getTransactionCount(PUBLIC_KEY_PayBack, (err, txCount) => {
+            //     const txObject = {
+            //         nonce: web3.utils.toHex(txCount),
+            //         to: PUBLIC_KEY_SecondAcc,
+            //         value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether')),
+            //         gasLimit: web3.utils.toHex(21000),
+            //         gasPrice: web3.utils.toHex(web3.utils.toWei('10', 'gwei'))
+            //     }
+            // })
+            const tx = {
+                // this could be provider.addresses[0] if it exists
+                from: PUBLIC_KEY_PayBack,
+                // target address, this could be a smart contract address
+                to: PAYBACK_CONTRACT_ADDRESS,
+                // optional if you want to specify the gas limit 
+                gas: web3.utils.toHex(225200),
+                // optional if you are invoking say a payable function 
+                // value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether')),
+                // this encodes the ABI of the method and the arguements
+                data: PayBackContract.methods.addPartner("Kaufland", "0xE4EF46b20DFC6C0D128Cd2089D7Af17b99c162A5", "EUR", 2).encodeABI()
+            };
+            const signPromise = web3.eth.accounts.signTransaction(tx, PRIVATE_KEY_PayBack);
+
+            signPromise.then((signedTx) => {
+                // raw transaction string may be available in .raw or 
+                // .rawTransaction depending on which signTransaction
+                // function was called
+                const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
+                sentTx.on("receipt", receipt => {
+                    console.log("partner created")
+                    // do something when receipt comes back
+                });
+                sentTx.on("error", err => {
+                    console.log("there was an error")
+                    // do something on transaction error
+                });
+            }).catch((err) => {
+                // do something when promise fails
+                console.log(err)
+            });
+        }
+
+        async function sendEthFromFirstToSecond() {
+            const BLOCKCHAIN_URL = "http://127.0.0.1:9545/";
+            // const BLOCKCHAIN_URL = "https://goerli.infura.io/v3/aa9588cdda9c4267a22d025ab87a3e5d";
+            const PAYBACK_CONTRACT_ADDRESS = "0x3e0A102d401672c014b47a4328abe39964BAe704";
+            const ABI_fileLink = "./ABI_PayBackToken.json";
+
+            const web3 = new Web3(new Web3.providers.HttpProvider(BLOCKCHAIN_URL));
+            const contract_build = await fetch(ABI_fileLink);
+            const CONTRACT_ABI = await contract_build.json();
+            // const CONTRACT_ABI = constract_build_json;
+            // console.log(CONTRACT_ABI)
+
+            const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, PAYBACK_CONTRACT_ADDRESS);
+            console.log(PayBackContract)
+
+            //create transaction 
+            // let params = [{
+            //     from: '0xb60e8dd61c5d32be8058bb8eb970870f07233155',
+            //     to: '0xd46e8dd67c5d32be8058bb8eb970870f07244567',
+            //     gas: '0x76c0', // 30400
+            //     gasPrice: '0x9184e72a000', // 10000000000000
+            //     value: '0x9184e72a', // 2441406250
+            //     data:
+            //         '0xd46e8dd67c5d32be8d46e8dd67c5d32be8058bb8eb970870f072445675058bb8eb970870f072445675',
+            // }]
+            // let result = await window.ethereum.request({ method: "sendTransaction", params }).catch((err) => { console.log(err) })
+            const PUBLIC_KEY_PayBack = "0x5178d8654301ab965fbcb031b5c4ed8b3ec598d2";
+            const PRIVATE_KEY_PayBack = "775ed2edb7cfc8246e322bd5cc502348a6c132a5ee3517ec2939b43f6371caad"
+
+            const PUBLIC_KEY_SecondAcc = "0x950ac95fbaf3a4e59f76b71cb38f4e68e561c2ae";
+
+
+            // web3.eth.getTransactionCount(PUBLIC_KEY_PayBack, (err, txCount) => {
+            //     const txObject = {
+            //         nonce: web3.utils.toHex(txCount),
+            //         to: PUBLIC_KEY_SecondAcc,
+            //         value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether')),
+            //         gasLimit: web3.utils.toHex(21000),
+            //         gasPrice: web3.utils.toHex(web3.utils.toWei('10', 'gwei'))
+            //     }
+            // })
+            const tx = {
+                // this could be provider.addresses[0] if it exists
+                from: PUBLIC_KEY_PayBack,
+                // target address, this could be a smart contract address
+                to: PUBLIC_KEY_SecondAcc,
+                // optional if you want to specify the gas limit 
+                gas: web3.utils.toHex(21000),
+                // optional if you are invoking say a payable function 
+                value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether')),
+                // this encodes the ABI of the method and the arguements
+                // data: myContract.methods.myMethod(arg, arg2).encodeABI()
+            };
+            const signPromise = web3.eth.accounts.signTransaction(tx, PRIVATE_KEY_PayBack);
+
+            signPromise.then((signedTx) => {
+                // raw transaction string may be available in .raw or 
+                // .rawTransaction depending on which signTransaction
+                // function was called
+                const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
+                sentTx.on("receipt", receipt => {
+                    console.log("received recepit")
+                    // do something when receipt comes back
+                });
+                sentTx.on("error", err => {
+                    console.log("there was an error")
+                    // do something on transaction error
+                });
+            }).catch((err) => {
+                // do something when promise fails
+                console.log(err)
+            });
+        }
+        function getBalanceOf(account) {
+
+            const BLOCKCHAIN_URL = "http://127.0.0.1:9545/";
+            const web3 = new Web3(new Web3.providers.HttpProvider(BLOCKCHAIN_URL));
+            // const account = "0x950ac95fbaf3a4e59f76b71cb38f4e68e561c2ae";
+
+            web3.eth.getBalance(account, (err, wei) => {
+                balance = web3.utils.fromWei(wei, 'ether')
+                console.log(balance)
+            })
+        }
+
+        async function getTotalSupply() {
+            const BLOCKCHAIN_URL = "http://127.0.0.1:9545/";
+            const PAYBACK_CONTRACT_ADDRESS = "0x3e0A102d401672c014b47a4328abe39964BAe704";
+            const ABI_fileLink = "./ABI_PayBackToken.json";
+
+            const web3 = new Web3(new Web3.providers.HttpProvider(BLOCKCHAIN_URL));
+            const contract_build = await fetch(ABI_fileLink);
+            const CONTRACT_ABI = await contract_build.json();
+            const contract = new web3.eth.Contract(CONTRACT_ABI, PAYBACK_CONTRACT_ADDRESS);
+
+            contract.methods.totalSupply().call((err, result) => { console.log(result) })
+        }
+
+        //----------------------------------------------------------------------------------------------------------------------------------------------------
+        async function ethers_createPartner() {
+            BLOCKCHAIN_NODE_URL = "http://127.0.0.1:9545/";
+            var provider = new ethers.JsonRpcProvider(BLOCKCHAIN_NODE_URL);
+            const ABI_fileLink = "./ABI_PayBackToken.json";
+
+            provider.getBlockNumber().then((result) => {
+                console.log("Current block number: " + result);
+            });
+
+            console.log(provider)
+            //n abstraction of an Ethereum Account
+            const signer = await provider.getSigner();
+            console.log("signer", signer);
+
+            const daiAddress = "0x3e0A102d401672c014b47a4328abe39964BAe704";
+            const contract_build = await fetch(ABI_fileLink);
+            const daiAbi = await contract_build.json();
+
+            // const daiContract = new ethers.Contract(daiAddress, daiAbi, provider);
+            // const daiWithSigner = daiContract.connect(signer);
+            const daiWithSigner = new ethers.Contract(daiAddress, daiAbi, signer);
+            // console.log("daiContract", daiContract)
+            console.log("daiWithSigner", daiWithSigner)
+            //name, addr, currency, valueForToken
+            const owner = await daiWithSigner.getOwner();
+            console.log("owner", owner)//0x5178d8654301ab965fbcb031b5c4ed8b3ec598d2
+            // let signature = await signer.signMessage("Hello World").catch((e) => {
+            //     console.log(e)
+            // });
+            // console.log(signature)
+            // estimateGas.
+            const tx = await daiWithSigner.estimateGas.addPartner("Kaufland", "0xE4EF46b20DFC6C0D128Cd2089D7Af17b99c162A5", "EUR", 2);
+            await tx.wait();
+            console.log("res", tx)
+        }
+
+        async function ethers_getPartner() {
+            BLOCKCHAIN_NODE_URL = "http://127.0.0.1:9545/";
+            var provider = new ethers.JsonRpcProvider(BLOCKCHAIN_NODE_URL);
+            const ABI_fileLink = "./ABI_PayBackToken.json";
+            const daiAddress = "0x3e0A102d401672c014b47a4328abe39964BAe704";
+
+            const contract_build = await fetch(ABI_fileLink);
+            const daiAbi = await contract_build.json();
+
+            const signer = await provider.getSigner();
+            const daiWithSigner = new ethers.Contract(daiAddress, daiAbi, signer);
+
+            const num_partners = await daiWithSigner.numPartner();
+            console.log("num_partners", num_partners)
+            console.log(num_partners)
+        }
+
+
+
+        // const web3 = new Web3(new Web3.providers.HttpProvider(BLOCKCHAIN_URL));
+        // const signer = web3.eth.accounts.privateKeyToAccount(
+        //     '01193351c9d26dc03eb62aca694e74b6fcb5a4f56553c2c946d2ff6c052c1df5'
+        // );
+        // '0x0dec902bb6c265d74ce4ab35e625c65aa88bad15' //public key
+        // web3.eth.accounts.wallet.add(signer);
+
+        // class SmartContract {
+        //     constructor(_sender) {
+        //         this.contract_addr = '0xceE9d983857C80715E2114EC0866E48959095A9a';
+        //         this.build_link = "./ABI_EnglingoBattle.json";
+        //         this.ADDR_SENDER = _sender;
+        //     }
+
+        //     async init() {
+        //         const contract_build = await fetch(this.build_link);
+        //         const constract_build_json = await contract_build.json();
+        //         this.contract_abi = constract_build_json.abi
+        //         this.eBattleContract = new web3.eth.Contract(this.contract_abi, this.contract_addr);
+        //         this.battleID = 123456789;
+        //         this.DEPOSIT = '1000000000000000000'; // 1ETH
+        //         this.ADDR_1 = '0x5178d8654301ab965fbcb031b5c4ed8b3ec598d2';
+        //         this.ADDR_2 = '0x950ac95fbaf3a4e59f76b71cb38f4e68e561c2ae';
+        //         // this.ADDR_SENDER = await connectWallet();
+        //         // console.log(this.ADDR_SENDER)
+        //         // '0x4d561b0847e25fc0077c9d386de6a1236e2cbbde';
+
+
+        //         // handleSignMessage = ({ publicAddress, nonce }) => {
+        //         //     return new Promise((resolve, reject) =>
+        //         //         web3.personal.sign(
+        //         //             web3.fromUtf8(`I am signing my one-time nonce: ${nonce}`),
+        //         //             publicAddress,
+        //         //             (err, signature) => {
+        //         //                 if (err) return reject(err);
+        //         //                 return resolve({ publicAddress, signature });
+        //         //             }
+        //         //         )
+        //         //     );
+        //         // };
+
+        //     }
+
+        class SmartContract {
+            constructor(_sender) {
+                this.contract_addr = PAYBACK_CONTRACT_ADDRESS;
+                this.build_link = "./ABI_PayBackToken.json";
+                this.ADDR_SENDER = _sender;
+            }
+
+            async init() {
+                const contract_build = await fetch(this.build_link);
+                const constract_build_json = await contract_build.json();
+                this.contract_abi = constract_build_json.abi
+                this.eBattleContract = new web3.eth.Contract(this.contract_abi, this.contract_addr);
+                this.battleID = 123456789;
+                this.DEPOSIT = '1000000000000000000'; // 1ETH
+                this.ADDR_1 = '0x5178d8654301ab965fbcb031b5c4ed8b3ec598d2';
+                this.ADDR_2 = '0x950ac95fbaf3a4e59f76b71cb38f4e68e561c2ae';
+                // this.ADDR_SENDER = await connectWallet();
+                // console.log(this.ADDR_SENDER)
+                // '0x4d561b0847e25fc0077c9d386de6a1236e2cbbde';
+
+
+                // handleSignMessage = ({ publicAddress, nonce }) => {
+                //     return new Promise((resolve, reject) =>
+                //         web3.personal.sign(
+                //             web3.fromUtf8(`I am signing my one-time nonce: ${nonce}`),
+                //             publicAddress,
+                //             (err, signature) => {
+                //                 if (err) return reject(err);
+                //                 return resolve({ publicAddress, signature });
+                //             }
+                //         )
+                //     );
+                // };
+
+            }
+
+
+            async createBattle() {
+                // const tx = {
+                //     from: this.ADDR_SENDER,
+                //     to: this.contract_addr,
+                //     gasPrice: '20000000000', // default gas price in wei, 20 gwei in this case
+                //     gas: '2000000',
+                //     data: this.eBattleContract.methods.createBattle(this.ADDR_1, this.ADDR_2, this.DEPOSIT).encodeABI()
+
+                // }
+                // console.log(tx)
+                // const signPromise = web3.eth.accounts.signTransaction(tx, tx.from);
+                // signPromise.then((signedTx) => {
+                //     // raw transaction string may be available in .raw or 
+                //     // .rawTransaction depending on which signTransaction
+                //     // function was called
+                //     const sentTx = web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
+                //     sentTx.on("receipt", receipt => {
+                //         // do something when receipt comes back
+                //         console.log('RECEIPT', receipt);
+                //     });
+                //     sentTx.on("error", err => {
+                //         // do something on transaction error
+                //         console.log(err);
+                //     });
+                // }).catch((err) => {
+                //     // do something when promise fails
+                //     console.log(err);
+                // });
+                // console.log(web3.eth.personal)
+                // web3.eth.personal.sign("Hello world", this.ADDR_SENDER, "test password!")
+                //     .then(console.log);
+                const signMessage = async () => {
+                    try {
+                        if (!window.ethereum)
+                            console.log("PLS install ETHEREUM Wallet");
+
+                        // await window.ethereum.send("eth_requestAccounts");
+                        const provider = new Web3(window.ethereum);
+                        console.log(provider)
+                        // const signer = provider.getSigner();
+                        console.log(web3.eth.defaultAccount)
+                        // const signature = await signer.signMessage
+                    } catch (err) {
+                        console.log(err);
+                    }
+                }
+                signMessage()
+
+                // const estimateGas_create = await this.eBattleContract.methods.createBattle(this.ADDR_1, this.ADDR_2, this.DEPOSIT).estimateGas({ from: signer.address });
+                // console.log(estimateGas_create);
+
+                // const battleID_returned = await this.eBattleContract.methods.createBattle(this.ADDR_1, this.ADDR_2, this.DEPOSIT)
+                //     .send({
+                //         from: signer.address,
+                //         gasPrice: '20000000000', // default gas price in wei, 20 gwei in this case
+                //         gas: estimateGas_create
+                //     }).on('error', function (e) {
+                //         console.log('~~~~~~~~Error', e)
+                //     }).on('sending', function (e) {
+                //         console.log('~~~~~~~~Sending', e);
+                //     }).on('sent', function (e) {
+                //         console.log('~~~~~~~~Sent', e);
+                //     }).on('transactionHash', function (hash) {
+                //         console.log('~~~~~~~~transactionHash', hash);
+                //     }).on('receipt', function (e) {
+                //         console.log('~~~~~~~~Receipt', e);
+                //         // battleID = e;
+                //     }).on('confirmation', function (confirmationNumber, receipt) {
+                //         console.log('~~~~~~~~ConfirmationNumber', confirmationNumber);
+                //         // console.log('~~~~~~~~Receipt',receipt);
+                //     })
+                // console.log('~~~~~~~~Returned Battle ID ', battleID_returned)
+
+            }
+        }
+
+        async function test() {
+            const ADDR_SENDER = await connectWallet();
+            console.log(ADDR_SENDER)
+            const sm = new SmartContract(ADDR_SENDER);
+            await sm.init();
+            sm.createBattle();
+
+
+            // const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:9545'));
+            // const contractAddr = "0x43c8954D7672a6DF67586745F6257fbe78Ff0204";
+            // // const abi_DappUni = require("./ABI_EnglingoBattle.json").abi;
+            // // import abi_englingoBattle from './ABI_EnglingoBattle.json' assert {type: 'json'};
+            // const abi_englingoBattle = await fetch("./ABI_EnglingoBattle.json")
+            // const abi_json = await abi_englingoBattle.json();
+            // const abi = abi_json.abi
+            // // fetch("./ABI_EnglingoBattle.json").then(response => {
+            // //     console.log(response)
+            // //    return response.json();
+            // // })
+            // // .then(data => console.log(data));
+            // // console.log(document.getElementById('ABI_EnglingoBattle'))
+            // // const abi_englingoBattle = JSON.parse(document.getElementById('ABI_EnglingoBattle').textContent);
+
+            // const eBattleContract = new web3.eth.Contract(abi, contractAddr);
+
+            // let battleID = 0;
+            // const bet_value = '1000000000000000000';
+            // let estimateGas_create = await eBattleContract.methods.createBattle('0x5178d8654301ab965fbcb031b5c4ed8b3ec598d2', '0x950ac95fbaf3a4e59f76b71cb38f4e68e561c2ae', bet_value).estimateGas({ from: '0x4d561b0847e25fc0077c9d386de6a1236e2cbbde' });
+            // console.log(estimateGas_create);
+
+            // const battleID_returned = await eBattleContract.methods.createBattle('0x5178d8654301ab965fbcb031b5c4ed8b3ec598d2', '0x950ac95fbaf3a4e59f76b71cb38f4e68e561c2ae', bet_value)
+            //     .send({
+            //         from: '0x4d561b0847e25fc0077c9d386de6a1236e2cbbde',
+            //         gasPrice: '20000000000', // default gas price in wei, 20 gwei in this case
+            //         gas: estimateGas_create
+            //     }).on('error', function (e) {
+            //         console.log('~~~~~~~~Error', e)
+            //     }).on('sending', function (e) {
+            //         console.log('~~~~~~~~Sending', e);
+            //     }).on('sent', function (e) {
+            //         console.log('~~~~~~~~Sent', e);
+            //     }).on('transactionHash', function (hash) {
+            //         console.log('~~~~~~~~transactionHash', hash);
+            //     }).on('receipt', function (e) {
+            //         console.log('~~~~~~~~Receipt', e);
+            //         // battleID = e;
+            //     }).on('confirmation', function (confirmationNumber, receipt) {
+            //         console.log('~~~~~~~~ConfirmationNumber', confirmationNumber);
+            //         // console.log('~~~~~~~~Receipt',receipt);
+            //     })
+            // console.log('~~~~~~~~Returned Battle ID ', battleID_returned)
+
+            // const res = await eBattleContract.methods.numBattles().call({ from: '0x5178d8654301ab965fbcb031b5c4ed8b3ec598d2' });
+            // console.log(res) //1
+
+            // await eBattleContract.methods.viewBattleDetails(battleID).call({ from: '0x5178d8654301ab965fbcb031b5c4ed8b3ec598d2' }, function (error, result) {
+            //     console.log(result);
+            // });
+
+            // let estimateGas_put = await eBattleContract.methods.putDeposit(battleID).estimateGas({ from: '0x5178d8654301ab965fbcb031b5c4ed8b3ec598d2', value: bet_value });
+            // console.log(estimateGas_put);
+            // //put deposit 1 user
+            // await eBattleContract.methods.putDeposit(battleID)
+            //     .send({
+            //         from: '0x5178d8654301ab965fbcb031b5c4ed8b3ec598d2',
+            //         gasPrice: '20000000000', // default gas price in wei, 20 gwei in this case
+            //         gas: estimateGas_put,
+            //         value: bet_value
+            //     }).on('error', function (e) {
+            //         console.log('~~~~~~~~Error', e)
+            //     }).on('sending', function (e) {
+            //         console.log('~~~~~~~~Sending', e);
+            //     }).on('sent', function (e) {
+            //         console.log('~~~~~~~~Sent', e);
+            //     }).on('transactionHash', function (hash) {
+            //         console.log('~~~~~~~~transactionHash', hash);
+            //     }).on('receipt', function (e) {
+            //         console.log('~~~~~~~~Receipt', e);
+            //     }).on('confirmation', function (confirmationNumber, receipt) {
+            //         console.log('~~~~~~~~ConfirmationNumber', confirmationNumber);
+            //         // console.log('~~~~~~~~Receipt',receipt);
+            //     })
+            // //leider nur die direkte werte des objects zurueck, nicht die arrays drinne    
+            // // const res2 = await eBattleContract.methods.battles('0').call({ from: '0x5178d8654301ab965fbcb031b5c4ed8b3ec598d2' });
+            // //     console.log(res2)
+
+            // let estimateGas_put2 = await eBattleContract.methods.putDeposit(battleID).estimateGas({ from: '0x950ac95fbaf3a4e59f76b71cb38f4e68e561c2ae', value: bet_value });
+            // console.log(estimateGas_put2);
+            // //  put deposit 2 user
+            // await eBattleContract.methods.putDeposit(battleID)
+            //     .send({
+            //         from: '0x950ac95fbaf3a4e59f76b71cb38f4e68e561c2ae',
+            //         gasPrice: '20000000000', // default gas price in wei, 20 gwei in this case
+            //         gas: estimateGas_put2,
+            //         value: bet_value
+            //     }).on('error', function (e) {
+            //         console.log('~~~~~~~~Error', e)
+            //     }).on('sending', function (e) {
+            //         console.log('~~~~~~~~Sending', e);
+            //     }).on('sent', function (e) {
+            //         console.log('~~~~~~~~Sent', e);
+            //     }).on('transactionHash', function (hash) {
+            //         console.log('~~~~~~~~transactionHash', hash);
+            //     }).on('receipt', function (e) {
+            //         console.log('~~~~~~~~Receipt', e);
+            //     }).on('confirmation', function (confirmationNumber, receipt) {
+            //         console.log('~~~~~~~~ConfirmationNumber', confirmationNumber);
+            //         // console.log('~~~~~~~~Receipt',receipt);
+            //     })
+        }
+
+
+
+
+    </script>
+
+
+</body>
+
+</html>

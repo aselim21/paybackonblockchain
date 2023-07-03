@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing Truffle Frontend</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.8.0/web3.min.js"
+        integrity="sha512-bSQ2kf76XufUYS/4XinoHLp5S4lNOyRv0/x5UJACiOMy8ueqTNwRFfUZWmWpwnczjRp9SjiF1jrXbGEim7Y0Xg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.6.0/ethers.umd.min.js"
+        integrity="sha512-Mr0Dky4WkyOWzAg18CZBK82FBLDigdWaHJMPDjVqCgQtjNr8ni5N5ec6jYYt83MbOU661aD9QxvUHTsyn0ZhZQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="global_var.js"></script>
+</head>
+
+<body>
+    <h1>DM Website</h1>
+    <h2>4. Step: The Client has enough tokens and wants to redeem them in exchange for goods.</h2>
+
+    <h3>Diese Woche: Signature Eau de Parfum, 50 ml</h3>
+    <h5>Normaler Preis: 17,95 € </h5>
+    <h4>Für 1500 Punkte / PBT = 15 € </h4>
+
+    <h3>You have a PayBack NFT?</h3>
+    <h2>...................................................................................................</h2>
+    <h3>Make sure you have enough ETH to sign the approve transaction</h3>
+    <button onclick="getSomeETH(1)">Get 1 ETH to be able to sign transaction</button>
+
+    <h3>Connect your metamask wallet</h3>
+    <button onclick="ethEnabled()">Connect Metamask Account</button>
+    <p> TODO: Here we should check if you have the NFT?</p>
+    <h3>Check your balance!</h3>
+    <button onclick="getTokenBalanceOf(PUBLIC_KEY_CLIENT_METAMASK)"> Check your Token balance </button>
+    <h3>Approve to Send 1500 Tokens</h3>
+    <button onclick="approve(1500)">Approve</button>
+    <h3>Check allowances!</h3>
+    <button onclick="allowancesCheck()">Allowance</button>
+    <h3>Kaufland can now transfer the amount of Tokens from your account.</h3>
+    <button onclick="transferAllowedAmount(1500)">Transfer Tokens</button>
+    <h3>Check your balance!</h3>
+    <button onclick="getTokenBalanceOf(PUBLIC_KEY_CLIENT_METAMASK)"> Check your Token balance </button>
+
+    <script>
+
+        // const PUBLIC_KEY_PARTNER = PUBLIC_KEY_DM;
+        // const PRIVATE_KEY_PARTNER = PRIVATE_KEY_DM;
+        const PUBLIC_KEY_PARTNER = PUBLIC_KEY_KAUFLAND;
+        const PRIVATE_KEY_PARTNER = PRIVATE_KEY_KAUFLAND;
+
+        let PUBLIC_KEY_CLIENT_METAMASK;
+        const web3 = new Web3(new Web3.providers.HttpProvider(BLOCKCHAIN_URL));
+        web3.eth.handleRevert = true;
+
+        const ethEnabled = async () => {
+            if (window.ethereum) {
+                const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+                PUBLIC_KEY_CLIENT_METAMASK = accounts[0];
+                console.log("PUBLIC_KEY_CLIENT_METAMASK: ", PUBLIC_KEY_CLIENT_METAMASK);
+                return true;
+            }
+            return false;
+        }
+
+        async function getSomeETH(_eth) {
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            const to = accounts[0];
+
+            var tx = {
+                from: PUBLIC_KEY_PARTNER,
+                to: to,
+                gas: web3.utils.toHex(3000000), // 30400
+                // gasPrice: '0x9184e72a000', // 10000000000000
+                value: web3.utils.toHex(web3.utils.toWei(JSON.stringify(_eth), 'ether')), // 2441406250 web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+            }
+
+            web3.eth.accounts.signTransaction(tx, PRIVATE_KEY_PARTNER).then(signed => {
+                tx_sent = web3.eth.sendSignedTransaction(signed.rawTransaction)
+                tx_sent.on("receipt", receipt => {
+                    console.log("received recepit", receipt);
+                    return true;
+                });
+                tx_sent.on("error", err => {
+                    console.error("there was an error");
+                    console.error(err);
+                    return false;
+                });
+            });
+        }
+        //------------------------------------------Signing with Ethers.js!-------------------------------------------
+        async function approve(_amount) {
+            //-----------------------------------------eth_signTypedData_v4 beispiel------------------------------
+            // const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            // let signedTransaction;
+
+            // const msgParams = {
+            //     domain: {
+            //         chainId: CHAIN_ID.toString(),
+            //         name: 'Ether Mail',
+            //         verifyingContract: CONTRACT_ADDRESS,
+            //         version: '1',
+            //     },
+            //     message: {
+            //         spender:PUBLIC_KEY_PARTNER,
+            //         amount:_amount
+            //         // contents: 'Hello, Bob!',
+            //         // from: {
+            //         //     name: 'You',
+            //         //     wallets: [
+            //         //         accounts[0]
+            //         //     ],
+            //         // },
+            //         // to: [
+            //         //     {
+            //         //         name: 'PayBackToken',
+            //         //         wallets: [
+            //         //             CONTRACT_ADDRESS
+            //         //         ],
+            //         //     },
+            //         // ],
+            //     },
+            //     primaryType: 'Approve',
+            //     types: {
+            //         EIP712Domain: [
+            //             { name: 'name', type: 'string' },
+            //             { name: 'version', type: 'string' },
+            //             { name: 'chainId', type: 'uint256' },
+            //             { name: 'verifyingContract', type: 'address' },
+            //         ],
+            //         Group: [
+            //             { name: 'name', type: 'string' },
+            //             { name: 'members', type: 'Person[]' },
+            //         ],
+            //         Mail: [
+            //             { name: 'from', type: 'Person' },
+            //             { name: 'to', type: 'Person[]' },
+            //             { name: 'contents', type: 'string' },
+            //         ],
+            //         Person: [
+            //             { name: 'name', type: 'string' },
+            //             { name: 'wallets', type: 'address[]' },
+            //         ],
+            //         Approve: [
+            //             { name: 'spender', type: 'address' },
+            //             { name: 'amount', type: 'uint256' },
+            //         ],
+            //     },
+            // };
+            // try {
+            //     const from = accounts[0];
+            //     const sign = await ethereum.request({
+            //         method: 'eth_signTypedData_v4',
+            //         params: [from, JSON.stringify(msgParams)],
+            //     });
+            //     signedTransaction = sign;
+            //     console.log(sign)
+            //     // signTypedDataV4Result.innerHTML = sign;
+            //     // signTypedDataV4Verify.disabled = false;
+            // } catch (err) {
+            //     console.error(err);
+            //     // signTypedDataV4Result.innerHTML = `Error: ${err.message}`;
+            // }
+            //--------------------------------------------------------------
+            //--------------------------------------------------working signing with web3js-------------------------
+            // const contract_build = await fetch(ABI_fileLink);
+            // const CONTRACT_ABI = await contract_build.json();
+            // const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+            // const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            // const from = accounts[0];
+            // const encoded = PayBackContract.methods.approve(PUBLIC_KEY_PARTNER, _amount).encodeABI();
+
+            // var tx = {
+            //     from: from,
+            //     to: CONTRACT_ADDRESS,
+            //     gas: web3.utils.toHex(3000000), // 30400
+            //     // gasPrice: '0x9184e72a000', // 10000000000000
+            //     // value: web3.utils.toHex(web3.utils.toWei('0.01', 'ether')), // 2441406250 web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+            //     data: encoded
+            // }
+
+
+            // const txHash = await ethereum.request({
+            //     method: 'eth_sendTransaction',
+            //     params: [tx],
+            // });
+            // tx_sent = web3.eth.sendSignedTransaction(txHash.rawTransaction)
+            // tx_sent.on("receipt", receipt => {
+            //     console.log("received recepit", receipt);
+            //     return true;
+            // });
+            // tx_sent.on("error", err => {
+            //     console.error("there was an error");
+            //     console.error(err);
+            //     return false;
+            // });
+            //-------------------------------------------------------------------------------------
+
+            // how the message looks like... provide more info... not possible ...
+            //if it throws error go to Metamask settings->advanced-> reset accounts
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            // const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = await provider.getSigner();
+
+            const contract_build = await fetch(ABI_fileLink);
+            const daiAbi = await contract_build.json();
+            const daiContract = new ethers.Contract(CONTRACT_ADDRESS, daiAbi, provider);
+            const daiWithSigner = daiContract.connect(signer);
+            // let maxFeePerGas = ethers.BigNumber.from(40000000000);
+            // let maxPriorityFeePerGas = ethers.BigNumber.from(40000000000);
+            const tx = await daiWithSigner.approve(PUBLIC_KEY_PARTNER, _amount); //,{gasLimit : 0, gasLimit : 4000000}
+            const res = await tx.wait();
+            console.log("tx", tx);
+            console.log("res", res);
+        }
+        async function approve2(_amount) {
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const from = accounts[0];
+
+                // const contract_build = await fetch(ABI_fileLink);
+                // const CONTRACT_ABI = await contract_build.json();
+                // const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+                // const transaction = PayBackContract.methods.approve(PUBLIC_KEY_PARTNER, _amount)
+                // const encodedTransaction = transaction.encodeABI();
+                // const gas = await transaction.estimateGas({ from: accounts[0] });
+                // console.log(gas)
+                // const txObject = {
+                //     from: accounts[0],
+                //     to: CONTRACT_ADDRESS,
+                //     gas: gas,
+                //     data: encodedTransaction,
+                // };
+
+                // // Request signature from Metamask
+                // const signedTx = await web3.eth.signTransaction(txObject);
+                // const result = await web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
+
+                // console.log('Transaction hash:', result.transactionHash);
+
+                const transaction = {
+                    to: PUBLIC_KEY_PARTNER,
+                    value: web3.utils.toHex(web3.utils.toWei(JSON.stringify(0.01), 'ether')) //ethers.utils.parseEther('0.01') // Example: Sending 0.1 ETH
+                };
+
+                // Requesting MetaMask to sign the transaction
+                const signedTransaction = await ethereum.request({
+                    method: 'eth_sendTransaction',
+                    params: [transaction]
+                });
+
+                console.log('Signed transaction:', signedTransaction);
+
+                // Example: Calling a contract method
+                // const methodName = 'approve';
+                // const methodParams = [PUBLIC_KEY_PARTNER, _amount] // Example: Passing a parameter to the method
+
+                // // Requesting MetaMask to sign the transaction
+                // const transaction = await contract.connect(ethereum.getSigner()).populateTransaction[methodName](...methodParams);
+                // const signedTransaction = await ethereum.request({
+                //     method: 'eth_sendTransaction',
+                //     params: [transaction]
+                // });
+
+                // console.log('Signed transaction:', signedTransaction);
+            } catch (error) {
+                console.error('Error connecting to Metamask:', error);
+            }
+        }
+        async function allowancesCheck() {
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            const owner = accounts[0];
+
+            const contract_build = await fetch(ABI_fileLink);
+            const CONTRACT_ABI = await contract_build.json();
+            const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+            try {
+                const res = await PayBackContract.methods.allowance(owner, PUBLIC_KEY_PARTNER).call();
+                console.log("Allowance:", res)
+                return res;
+            } catch (err) {
+                console.error(err)
+            }
+
+        }
+        async function transferAllowedAmount(_amount) {
+
+            const contract_build = await fetch(ABI_fileLink);
+            const CONTRACT_ABI = await contract_build.json();
+            const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            const from = accounts[0];
+            const encoded = PayBackContract.methods.transferFrom(from, PUBLIC_KEY_PARTNER, _amount).encodeABI();
+
+            var tx = {
+                from: PUBLIC_KEY_PARTNER,
+                to: CONTRACT_ADDRESS,
+                gas: web3.utils.toHex(3000000), // 30400
+                // gasPrice: '0x9184e72a000', // 10000000000000
+                // value: '', // 2441406250 web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+                data: encoded
+            }
+
+            web3.eth.accounts.signTransaction(tx, PRIVATE_KEY_PARTNER).then(signed => {
+                tx_sent = web3.eth.sendSignedTransaction(signed.rawTransaction)
+                tx_sent.on("receipt", receipt => {
+                    console.log("received recepit", receipt);
+                    return true;
+                });
+                tx_sent.on("error", err => {
+                    console.error("there was an error");
+                    console.error(err);
+                    return false;
+                });
+            });
+        }
+        async function getTokenBalanceOf(_addr) {
+            const contract_build = await fetch(ABI_fileLink);
+            const CONTRACT_ABI = await contract_build.json();
+            const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+            try {
+                const res = await PayBackContract.methods.balanceOf(_addr).call();
+                console.log(res)
+                return res;
+            } catch (err) {
+                console.error(err)
+            }
+
+        }
+
+    </script>
+
+
+</body>
+
+</html>

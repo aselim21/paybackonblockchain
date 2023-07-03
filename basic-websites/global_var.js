@@ -1,4 +1,10 @@
-//addresses
+//blockchain
+const BLOCKCHAIN_URL = "http://127.0.0.1:9545/"
+
+//contract
+const CONTRACT_ADDRESS = "0xb1328DfCc897bd993Fb6fB4ba442B18B017e39c7"
+const ABI_fileLink = "./ABI_PayBackToken.json"
+const CHAIN_ID =1337 //5777
 
 //addr0 CONTRACT_OWNER
 const PUBLIC_KEY_PayBack = "0x5178d8654301ab965fbcb031b5c4ed8b3ec598d2"
@@ -16,9 +22,5 @@ const PRIVATE_KEY_DM = "56dd7f9806b2d6341655840ea233952fbb65ff25d5a6f38536bce7db
 const PUBLIC_KEY_CLIENT = "0x6ed9ca8f0cd3d0fe1d5c17054413b977e7fe5a2d"
 const PRIVATE_KEY_CLIENT = "fb06efe753cd2776e634cadcbfa00a795a3218940057b9be95ac72422586195b"
 
-//contract
-const CONTRACT_ADDRESS = "0x6141A61ab88FBF81dFdBb41Eb223fD81a2BF5B81"
-const ABI_fileLink = "./ABI_PayBackToken.json"
-
-//blockchain
-const BLOCKCHAIN_URL = "http://127.0.0.1:9545/"
+const METAMASK_PRIVATE_KEY = "2f98fa37d6c4f8709f7c48cce08df9347c471118f2773556d6af9034084dda68"
+const METAMASK_PUBLIC_KEY = "0xE4EF46b20DFC6C0D128Cd2089D7Af17b99c162A5"

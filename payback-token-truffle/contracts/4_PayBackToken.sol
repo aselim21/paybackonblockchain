@@ -3,8 +3,9 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./2_PayBackPartnership.sol";
+import "./3_PayBackClients.sol";
 
-contract PayBackToken is IERC20, PayBackPartnership {
+contract PayBackToken is IERC20, PayBackPartnership, PayBackClients {
     using SafeMath for uint256;
 
     //should be private?
@@ -72,21 +73,40 @@ contract PayBackToken is IERC20, PayBackPartnership {
         addrNotNull(_to)
         returns (bool)
     {
+        //there is no min or max value here
         //there are 2 cases!
         // check if the msg.sender is owner or partner
-        Partner storage p = addrToPartner[msg.sender];
+        Partner storage p_sender = addrToPartner[msg.sender];
         require(
-            msg.sender == _owner || msg.sender == p.walletAddr,
+            msg.sender == _owner || msg.sender == p_sender.walletAddr,
             "Only the owner or partners can transfer tokens."
         );
 
         //CASE 1: Contract Owner Payback wants to send his partner some tokens
+        if (msg.sender == _owner) {
+            Partner storage p_to = addrToPartner[_to];
+            require(_to == p_to.walletAddr, "Owner can only send to partners.");
+        }
         //CASE 2: Partner wants to sent his client some tokens
-        _balances[msg.sender] = _balances[msg.sender].sub(_amount);
+        else {
+            //check if _to is a registered client
+            require(_clientAddrToId[_to] != 0, "This address is not a client");
+        }
+
+        _transfer(msg.sender, _to, _amount);
+
+        return true;
+    }
+
+    function _transfer(
+        address _from,
+        address _to,
+        uint256 _amount
+    ) internal returns (bool) {
+        _balances[_from] = _balances[_from].sub(_amount);
         _balances[_to] = _balances[_to].add(_amount);
 
-        emit Transfer(msg.sender, _to, _amount);
-
+        emit Transfer(_from, _to, _amount);
         return true;
     }
 
@@ -105,10 +125,32 @@ contract PayBackToken is IERC20, PayBackPartnership {
         return _allowed[_owner][_spender];
     }
 
-    //
-    function approve(address _spender, uint256 _amount) public returns (bool) {
-        address owner = msg.sender;
-        _approve(owner, _spender, _amount);
+    
+    function approve(address _spender, uint256 _amount) public isClient(msg.sender) returns (bool) {
+      
+
+        //the amount
+        require(_amount != 0, "ERC20: Amount cannot be 0");
+        require(
+            _amount <= _balances[msg.sender],
+            "Amount cannot be greater than balance"
+        );
+        //the owner is a client, means cannot be partner or contract owner
+        //should never happen
+        Partner storage p_sender = addrToPartner[msg.sender];
+        assert(msg.sender != _owner && msg.sender != p_sender.walletAddr);
+
+        //MAYBE : Spender can also be the contract owner? TO DECIDE WHO IS PAYING FOR THE TRANSACTIONS OF THE PARTNERS
+        //the spender is partner, not contract owner
+        Partner storage p_spender = addrToPartner[_spender];
+        require(
+            p_spender.walletAddr != address(0),
+            "ERC20: the spender should be a partner"
+        );
+        //the amount should be 100, 200, 1000, 2000, 5000?
+        //check if msg.sender is client?
+        //check if spender is partner
+        _approve(msg.sender, _spender, _amount);
         return true;
     }
 
@@ -117,8 +159,15 @@ contract PayBackToken is IERC20, PayBackPartnership {
         address spender,
         uint256 amount
     ) internal virtual {
+        //addresses are not zero
         require(owner != address(0), "ERC20: approve from the zero address");
-        require(spender != address(0), "ERC20: approve to the zero address");
+        require(spender != address(0), "ERC20: approve to the zero address");      
+
+        //cannot create a new allowance before the existing is spent
+        require(
+            _allowed[owner][spender] == 0,
+            "First spend the existing allowed amount."
+        );
 
         _allowed[owner][spender] = amount;
         emit Approval(owner, spender, amount);
@@ -129,42 +178,29 @@ contract PayBackToken is IERC20, PayBackPartnership {
         address _to,
         uint256 _amount
     ) public returns (bool) {
-        //you allow someone to spend your tokens
-        //
-        //TODO who can start this function????
 
-        //check if the amount they want to send is real
-        require(
-            _balances[_from] >= _amount,
-            "The address doesn't have enough balance to send the amount."
-        );
-
-        Partner storage p_sender = addrToPartner[_from];
-
-        if (p_sender.walletAddr != address(0)) {
-            // if the sender is a partner, he can send tokens
-            _balances[_from] = _balances[_from].sub(_amount);
-            _balances[_to] = _balances[_to].add(_amount);
-        } else {
-            //if the sender is not a partner check if the receiver is partner
-            Partner storage p_receiver = addrToPartner[_to];
-            require(
-                p_receiver.walletAddr == address(0),
-                "The receiver address is not a partner."
-            );
-
-            if (p_receiver.walletAddr != address(0)) {
-                // sending to partner
-                // check if the amount is round?
-                _balances[_from] = _balances[_from].sub(_amount);
-                _balances[_to] = _balances[_to].add(_amount);
-            }
-        }
-        //if the from is a partner.. then its okay to send
-        //else if the from is a normal user.. he can only send to partner
-        //check if the amount is above
-
+        address spender = msg.sender;
+ 
+        _spendAllowance(_from, spender, _amount);
+        _transfer(_from, _to, _amount);
+        
         return true;
+    }
+
+    function _spendAllowance(
+        address owner,
+        address spender,
+        uint256 amount
+    ) internal virtual {
+        //get the allowed amount and check if is allowed in the same time
+        uint256 currentAllowance = _allowed[owner][spender];
+        if (currentAllowance != type(uint256).max) {
+            require(
+                currentAllowance >= amount,
+                "ERC20: insufficient allowance"
+            );
+            _allowed[owner][spender] = currentAllowance.sub(amount);
+        }
     }
 
     //----------------------------------Additional functions----------------------------------
@@ -174,7 +210,4 @@ contract PayBackToken is IERC20, PayBackPartnership {
         _balances[_owner] = _balances[_owner].add(_amount);
         return true;
     }
-
-    // TODO : Implement all other functions,
-    // make the specific function for out Token virtual and external? override?
 }

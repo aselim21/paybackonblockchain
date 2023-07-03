@@ -3,35 +3,6 @@ pragma solidity ^0.8.19;
 
 import "./1_Owner.sol";
 
-library SafeMath {
-    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-        if (a == 0) {
-            return 0;
-        }
-        uint256 c = a * b;
-        assert(c / a == b);
-        return c;
-    }
-
-    function div(uint256 a, uint256 b) internal pure returns (uint256) {
-        // assert(b > 0); // Solidity automatically throws when dividing by 0
-        uint256 c = a / b;
-        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-        return c;
-    }
-
-    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        assert(b <= a);
-        return a - b;
-    }
-
-    function add(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 c = a + b;
-        assert(c >= a);
-        return c;
-    }
-}
-
 contract PayBackPartnership is Owner{
 
     using SafeMath for uint256;
@@ -47,7 +18,7 @@ contract PayBackPartnership is Owner{
 
     Partner[] public partners; // starting from 0
     mapping(address => Partner) public addrToPartner;
-    // mapping(uint256 => Partner) private _IdToPartner;
+    mapping(uint256 => address) public partnerIdToAddr;
 
     //-------------------------Constructor-------------------------
     constructor() {
@@ -117,11 +88,11 @@ contract PayBackPartnership is Owner{
 
         //increase the numbers/id of the partners
         //first id is 1
-        numPartner.add(1);
+        numPartner = numPartner.add(1);
 
         //fix the mappings
         addrToPartner[_addr] = newPartner;
-        // _IdToPartner[numPartner] = newPartner;
+        partnerIdToAddr[numPartner] = _addr;
 
         //TODO: Send tokens
         // sendTokensToPartner(numPartner);?

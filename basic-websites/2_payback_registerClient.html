@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing Truffle Frontend</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.8.0/web3.min.js"
+        integrity="sha512-bSQ2kf76XufUYS/4XinoHLp5S4lNOyRv0/x5UJACiOMy8ueqTNwRFfUZWmWpwnczjRp9SjiF1jrXbGEim7Y0Xg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.6.0/ethers.umd.min.js"
+        integrity="sha512-Mr0Dky4WkyOWzAg18CZBK82FBLDigdWaHJMPDjVqCgQtjNr8ni5N5ec6jYYt83MbOU661aD9QxvUHTsyn0ZhZQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="global_var.js"></script>
+
+</head>
+
+<body>
+    <h1>PayBack Website</h1>
+    <h2>2. Step: Register Client</h2>
+
+    <h3> Register your client with following data</h3>
+    <p>Email: max.mustermann@capgemini.com</p>
+    <p>Anrede: Herr</p>
+    <p>Vorname: Max</p>
+    <p>Nachname: Mustermann</p>
+    <p>Strasse und Hausnummer: Lindenstr. 55</p>
+    <p>PLZ: 51103</p>
+    <p>Ort: Koeln</p>
+    <p>Land: Deutschland</p>
+    <p>Geburtsdatum: 01.01.1999</p>
+
+    <h3>Connect your Metamask Wallet so that we get your public key</h3>
+    <button onclick="ethEnabled()">Connect your Metamask Wallet</button>
+
+    <h3>Register as a client with your wallet</h3>
+    <button onclick="registerClient()"> Register </button>
+
+    <h3>Check if client was registered and what is the id:</h3>
+    <button onclick="getClientId()"> Read Add -> ID </button>
+    <p>If the value is greater than 0, means it was successfull and this is the id.</p>
+    <h2>...................................................................................................</h2>
+
+
+    <script>
+
+        let PUBLIC_KEY_CLIENT_METAMASK;
+        const web3 = new Web3(new Web3.providers.HttpProvider(BLOCKCHAIN_URL));
+        web3.eth.handleRevert = true;
+        // web3.eth.accounts.privateKeyToAccount(PUBLIC_KEY_PARTNER);
+
+        const ethEnabled = async () => {
+            if (window.ethereum) {
+                const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+                PUBLIC_KEY_CLIENT_METAMASK = accounts[0];
+                console.log("PUBLIC_KEY_CLIENT_METAMASK: ", PUBLIC_KEY_CLIENT_METAMASK);
+                return true;
+            }
+            return false;
+        }
+        async function registerClient_ethers() {
+
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            // const signer = await provider.getSigner();
+            const signer = new ethers.Wallet(PRIVATE_KEY_PayBack, provider);
+            const contract_build = await fetch(ABI_fileLink);
+            const daiAbi = await contract_build.json();
+
+            const daiContract = new ethers.Contract(CONTRACT_ADDRESS, daiAbi, provider);
+
+            const daiWithSigner = daiContract.connect(signer);
+
+            const tx = await daiWithSigner.addClient(PUBLIC_KEY_CLIENT_METAMASK);
+            const res = await tx.wait();
+            console.log("tx", tx);
+            console.log("res", res);
+
+        }
+
+        async function registerClient() {
+
+            const contract_build = await fetch(ABI_fileLink);
+            const CONTRACT_ABI = await contract_build.json();
+            const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+            // const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            // const from = accounts[0];
+            const encoded = PayBackContract.methods.addClient(PUBLIC_KEY_CLIENT_METAMASK).encodeABI();
+
+            var tx = {
+                from: PUBLIC_KEY_PayBack,
+                to: CONTRACT_ADDRESS,
+                gas: web3.utils.toHex(3000000), // 30400
+                // gasPrice: '0x9184e72a000', // 10000000000000
+                // value: '', // 2441406250 web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+                data: encoded
+            }
+
+            web3.eth.accounts.signTransaction(tx, PRIVATE_KEY_PayBack).then(signed => {
+                tx_sent = web3.eth.sendSignedTransaction(signed.rawTransaction)
+                tx_sent.on("receipt", receipt => {
+                    console.log("received recepit", receipt);
+                    return true;
+                });
+                tx_sent.on("error", err => {
+                    console.error("there was an error");
+                    console.error(err);
+                    return false;
+                });
+            });
+
+        }
+        async function getClientId(){
+            const contract_build = await fetch(ABI_fileLink);
+            const CONTRACT_ABI = await contract_build.json();
+            const PayBackContract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+            try {
+                const res = await PayBackContract.methods.getClientId(PUBLIC_KEY_CLIENT_METAMASK).call();
+                console.log(res);
+                return res;
+            } catch (err) {
+                console.error(err)
+            }
+        }
+
+    </script>
+</body>
+
+</html>
