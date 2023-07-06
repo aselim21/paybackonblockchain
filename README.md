@@ -29,7 +29,7 @@ value for token: 2
 3. Payback sends the agreed amount of tokens to its new partner Kaufland - 10k
 
 ### Clients register for a payback account
-//todo
+
 
 ### Client wants to make purchase from Kaufland and gather PBT using his PayBack Accoount/Wallet
 1. User has already selected items to his shopping cart and is on the page, where he has to pay 50 EURO.
@@ -64,9 +64,9 @@ The best would be with SSI, not NFT, but sadly its getting too complicated for t
 
 Feste optionen:
 PBT : EURO
-200 = 2
-500 = 5
-1000 = 10
-2000 = 20
+* 200 = 2
+* 500 = 5
+* 1000 = 10
+* 2000 = 20
 
 ## System
