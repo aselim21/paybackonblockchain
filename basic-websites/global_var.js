@@ -2,7 +2,7 @@
 const BLOCKCHAIN_URL = "http://127.0.0.1:9545/"
 
 //contract
-const CONTRACT_ADDRESS = "0xb1328DfCc897bd993Fb6fB4ba442B18B017e39c7"
+const CONTRACT_ADDRESS = "0x6141A61ab88FBF81dFdBb41Eb223fD81a2BF5B81"
 const ABI_fileLink = "./ABI_PayBackToken.json"
 const CHAIN_ID =1337 //5777
 
