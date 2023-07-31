@@ -10,7 +10,7 @@
   "sourceMap": "101:817:1:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;",
   "deployedSourceMap": "101:817:1:-:0;;;;;;;;",
   "source": "// SPDX-License-Identifier: GPL-3.0\r\n\r\npragma solidity ^0.8.19;\r\n\r\n// import \"hardhat/console.sol\";\r\nlibrary SafeMath {\r\n    function mul(uint256 a, uint256 b) internal pure returns (uint256) {\r\n        if (a == 0) {\r\n            return 0;\r\n        }\r\n        uint256 c = a * b;\r\n        assert(c / a == b);\r\n        return c;\r\n    }\r\n\r\n    function div(uint256 a, uint256 b) internal pure returns (uint256) {\r\n        // assert(b > 0); // Solidity automatically throws when dividing by 0\r\n        uint256 c = a / b;\r\n        // assert(a == b * c + a % b); // There is no case in which this doesn't hold\r\n        return c;\r\n    }\r\n\r\n    function sub(uint256 a, uint256 b) internal pure returns (uint256) {\r\n        assert(b <= a);\r\n        return a - b;\r\n    }\r\n\r\n    function add(uint256 a, uint256 b) internal pure returns (uint256) {\r\n        uint256 c = a + b;\r\n        assert(c >= a);\r\n        return c;\r\n    }\r\n}\r\n/**\r\n * @title Owner\r\n * @dev Set & change owner\r\n */\r\ncontract Owner {\r\n\r\n    address internal _owner;\r\n    \r\n    // event for EVM logging\r\n    event OwnerSet(address indexed oldOwner, address indexed newOwner);\r\n    \r\n    // modifier to check if caller is owner\r\n    modifier isOwner() {\r\n        // If the first argument of 'require' evaluates to 'false', execution terminates and all\r\n        // changes to the state and to Ether balances are reverted.\r\n        // This used to consume all gas in old EVM versions, but not anymore.\r\n        // It is often a good idea to use 'require' to check if functions are called correctly.\r\n        // As a second argument, you can also provide an explanation about what went wrong.\r\n        require(msg.sender == _owner, \"Caller is not owner\");\r\n        _;\r\n    }\r\n    \r\n    /**\r\n     * @dev Set contract deployer as owner\r\n     */\r\n    constructor() {\r\n        // console.log(\"Owner contract deployed by:\", msg.sender);\r\n        _owner = msg.sender; // 'msg.sender' is sender of current call, contract deployer for a constructor\r\n        emit OwnerSet(address(0), _owner);\r\n    }\r\n\r\n    /**\r\n     * @dev Change owner\r\n     * @param newOwner address of new owner\r\n     */\r\n     //ACH : Its difficult, because there is the initial Total supply that is dependent on that address\r\n    // function changeOwner(address newOwner) public isOwner {\r\n    //     emit OwnerSet(_owner, newOwner);\r\n    //     _owner = newOwner;\r\n    // }\r\n\r\n    /**\r\n     * @dev Return owner address \r\n     * @return address of owner\r\n     */\r\n    function getOwner() external view returns (address) {\r\n        return _owner;\r\n    }\r\n}",
-  "sourcePath": "D:\\PersonalStuff\\GitProjects\\PayBackOnBlockchain\\payback-token-truffle\\contracts\\1_Owner.sol",
+  "sourcePath": "C:\\Users\\aselim\\Documents\\GitHub\\PayBackOnBlockchain\\payback-token-truffle\\contracts\\1_Owner.sol",
   "ast": {
     "absolutePath": "project:/contracts/1_Owner.sol",
     "exportedSymbols": {
@@ -1810,7 +1810,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.14",
-  "updatedAt": "2023-07-06T13:48:10.774Z",
+  "updatedAt": "2023-07-31T10:36:25.046Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
