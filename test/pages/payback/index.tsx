@@ -17,8 +17,10 @@ import {
 } from '@mui/material';
 import Copyright from '../components/Copyright';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+// import AddPartnerForm from './partnerSettings';
+import Navbar from './components/navbar';
 
-const pages = ['Dashboard', 'Partner verwalten', 'Anfragen'];
+const pages = [{ name: 'Dashboard', link: '/payback/dashboard' }, { name: 'Partner verwalten', link: '/payback/partnerSettings' }, { name: 'Anfragen', link: '/payback/' }];
 const settings = ['Einstellungen', 'Logout'];
 
 export default function Payback() {
@@ -26,9 +28,36 @@ export default function Payback() {
         <>
             <Navbar />
             <ThemeProvider theme={ThemePayback}>
+                <Box
+                    component="img"
+                    sx={{
+                        width: "60%",
+                        mt: '4rem'
+                    }}
+                    justifyContent="center"
+                    alt="Payback add"
+                    src="https://www.payback.group/fileadmin/bilder_pl/220210_PB_DE_PR_Bonus_Award_Sieger_4Kategorien.jpg"
+                />
                 <Container component="main" maxWidth="xs">
-                    <CssBaseline />
-                    <AddPartnerForm />
+
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'space-around',
+                            p: 1,
+                            m: 1,
+                            // mt: 30,
+                            // bgcolor: 'background.paper',
+                            borderRadius: 1,
+                        }}
+                        color='primary.main'
+                    >
+                        {/* <Box  sx={{ mt: '4rem' }} > */}
+
+                        <Button variant="contained">Client</Button>
+                        <Button variant="contained">Administrator</Button>
+                    </Box>
+
                     <Copyright sx={{ mt: 5 }} />
                 </Container>
             </ThemeProvider>
@@ -56,155 +85,3 @@ const ThemePayback = createTheme({
         }
     }
 });
-
-function Navbar() {
-    const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
-    const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
-
-    const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorElNav(event.currentTarget);
-    };
-    const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorElUser(event.currentTarget);
-    };
-
-    const handleCloseNavMenu = () => {
-        setAnchorElNav(null);
-    };
-
-    const handleCloseUserMenu = () => {
-        setAnchorElUser(null);
-    };
-
-    return (
-        <ThemeProvider theme={ThemePayback}>
-            <AppBar position="static" color="secondary">
-                <Container maxWidth="xl">
-                    <Toolbar disableGutters >
-                        <Box
-                            component="img"
-                            sx={{
-                                width: "10%",
-                            }}
-                            onClick={() => { }}
-                            alt="Payback logo"
-                            src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Payback_Logo_2023.svg/1920px-Payback_Logo_2023.svg.png"
-                        />
-                        <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex'} }}>
-                            {pages.map((page) => (
-                                <Button
-                                    key={page}
-                                    onClick={handleCloseNavMenu}
-                                    sx={{ my: 2, color: 'white', display: 'block', ml:'1rem', backgroundColor: "primary.main"}}
-                                >
-                                    {page}
-                                </Button>
-                            ))}
-                        </Box>
-
-                        <Box sx={{ flexGrow: 0 }}>
-                            <Tooltip title="Open settings">
-                                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                    <Avatar alt="Payback admin" src="/static/images/avatar/2.jpg" >P</Avatar>
-                                </IconButton>
-                            </Tooltip>
-                            <Menu
-                                sx={{ mt: '45px' }}
-                                id="menu-appbar"
-                                anchorEl={anchorElUser}
-                                anchorOrigin={{
-                                    vertical: 'top',
-                                    horizontal: 'right',
-                                }}
-                                keepMounted
-                                transformOrigin={{
-                                    vertical: 'top',
-                                    horizontal: 'right',
-                                }}
-                                open={Boolean(anchorElUser)}
-                                onClose={handleCloseUserMenu}
-                            >
-                                {settings.map((setting) => (
-                                    <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                                        <Typography textAlign="center">{setting}</Typography>
-                                    </MenuItem>
-                                ))}
-                            </Menu>
-                        </Box>
-                    </Toolbar>
-                </Container>
-            </AppBar>
-        </ThemeProvider>
-    );
-}
-
-function AddPartnerForm() {
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const data = new FormData(event.currentTarget);
-        console.log({
-            email: data.get('email'),
-            password: data.get('password'),
-        });
-    };
-    return (
-        // source https://github.com/mui/material-ui/blob/v5.14.2/docs/data/material/getting-started/templates/sign-up/SignUp.tsx
-        <Box
-            sx={{
-                marginTop: 8,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-            }}
-        >
-            <Typography component="h1" variant="h5">
-                Einen neuen Partner anmelden
-            </Typography>
-            <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
-                <Grid container spacing={2}>
-                    <Grid item xs={12}>
-                        <TextField
-                            required
-                            fullWidth
-                            id="partner_name"
-                            label="Name"
-                        />
-                    </Grid>
-                    <Grid item xs={12} >
-                        <TextField
-                            required
-                            fullWidth
-                            id="wallet_addr"
-                            label="Wallet Adresse"
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <TextField
-                            required
-                            fullWidth
-                            id="currency"
-                            label="Währung"
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <TextField
-                            required
-                            fullWidth
-                            id="value_for_token"
-                            label="Wert für ein Token"
-                        />
-                    </Grid>
-                </Grid>
-                <Button
-                    type="submit"
-                    fullWidth
-                    variant="contained"
-                    sx={{ mt: 3, mb: 2 }}
-                >
-                    anmelden
-                </Button>
-
-            </Box>
-        </Box>
-    )
-}
