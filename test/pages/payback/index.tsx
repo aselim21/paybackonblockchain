@@ -42,7 +42,7 @@ const ThemePayback = createTheme({
         primary: {
             main: '#003eb0',
             light: '#4075c0',
-            dark: '',
+            // dark: '',
             contrastText: '#fff',
         },
         secondary: {
@@ -75,64 +75,66 @@ function Navbar() {
     const handleCloseUserMenu = () => {
         setAnchorElUser(null);
     };
-    
-    return (
-        <AppBar position="static">
-            <Container maxWidth="xl">
-                <Toolbar disableGutters >
-                    <Box
-                        component="img"
-                        sx={{
-                            width: "10%",
-                        }}
-                        onClick={() => { }}
-                        alt="Payback logo"
-                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Payback_Logo_2023.svg/1920px-Payback_Logo_2023.svg.png"
-                    />
-                    <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                        {pages.map((page) => (
-                            <Button
-                                key={page}
-                                onClick={handleCloseNavMenu}
-                                sx={{ my: 2, color: 'white', display: 'block' }}
-                            >
-                                {page}
-                            </Button>
-                        ))}
-                    </Box>
 
-                    <Box sx={{ flexGrow: 0 }}>
-                        <Tooltip title="Open settings">
-                            <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                <Avatar alt="Payback admin" src="/static/images/avatar/2.jpg" > P</Avatar>
-                            </IconButton>
-                        </Tooltip>
-                        <Menu
-                            sx={{ mt: '45px' }}
-                            id="menu-appbar"
-                            anchorEl={anchorElUser}
-                            anchorOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right',
+    return (
+        <ThemeProvider theme={ThemePayback}>
+            <AppBar position="static" color="secondary">
+                <Container maxWidth="xl">
+                    <Toolbar disableGutters >
+                        <Box
+                            component="img"
+                            sx={{
+                                width: "10%",
                             }}
-                            keepMounted
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right',
-                            }}
-                            open={Boolean(anchorElUser)}
-                            onClose={handleCloseUserMenu}
-                        >
-                            {settings.map((setting) => (
-                                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                                    <Typography textAlign="center">{setting}</Typography>
-                                </MenuItem>
+                            onClick={() => { }}
+                            alt="Payback logo"
+                            src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Payback_Logo_2023.svg/1920px-Payback_Logo_2023.svg.png"
+                        />
+                        <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex'} }}>
+                            {pages.map((page) => (
+                                <Button
+                                    key={page}
+                                    onClick={handleCloseNavMenu}
+                                    sx={{ my: 2, color: 'white', display: 'block', ml:'1rem', backgroundColor: "primary.main"}}
+                                >
+                                    {page}
+                                </Button>
                             ))}
-                        </Menu>
-                    </Box>
-                </Toolbar>
-            </Container>
-        </AppBar>
+                        </Box>
+
+                        <Box sx={{ flexGrow: 0 }}>
+                            <Tooltip title="Open settings">
+                                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                                    <Avatar alt="Payback admin" src="/static/images/avatar/2.jpg" >P</Avatar>
+                                </IconButton>
+                            </Tooltip>
+                            <Menu
+                                sx={{ mt: '45px' }}
+                                id="menu-appbar"
+                                anchorEl={anchorElUser}
+                                anchorOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right',
+                                }}
+                                keepMounted
+                                transformOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right',
+                                }}
+                                open={Boolean(anchorElUser)}
+                                onClose={handleCloseUserMenu}
+                            >
+                                {settings.map((setting) => (
+                                    <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                                        <Typography textAlign="center">{setting}</Typography>
+                                    </MenuItem>
+                                ))}
+                            </Menu>
+                        </Box>
+                    </Toolbar>
+                </Container>
+            </AppBar>
+        </ThemeProvider>
     );
 }
 
@@ -201,7 +203,7 @@ function AddPartnerForm() {
                 >
                     anmelden
                 </Button>
-            
+
             </Box>
         </Box>
     )
