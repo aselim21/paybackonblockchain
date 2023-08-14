@@ -20,8 +20,6 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 // import AddPartnerForm from './partnerSettings';
 import Navbar from './components/navbar';
 
-const pages = [{ name: 'Dashboard', link: '/payback/dashboard' }, { name: 'Partner verwalten', link: '/payback/partnerSettings' }, { name: 'Anfragen', link: '/payback/' }];
-const settings = ['Einstellungen', 'Logout'];
 
 export default function Payback() {
     return (
