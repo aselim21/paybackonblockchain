@@ -3,34 +3,7 @@
 pragma solidity ^0.8.19;
 
 // import "hardhat/console.sol";
-library SafeMath {
-    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-        if (a == 0) {
-            return 0;
-        }
-        uint256 c = a * b;
-        assert(c / a == b);
-        return c;
-    }
 
-    function div(uint256 a, uint256 b) internal pure returns (uint256) {
-        // assert(b > 0); // Solidity automatically throws when dividing by 0
-        uint256 c = a / b;
-        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-        return c;
-    }
-
-    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        assert(b <= a);
-        return a - b;
-    }
-
-    function add(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 c = a + b;
-        assert(c >= a);
-        return c;
-    }
-}
 /**
  * @title Owner
  * @dev Set & change owner
@@ -39,8 +12,8 @@ contract Owner {
 
     address internal _owner;
     
-    // event for EVM logging
-    event OwnerSet(address indexed oldOwner, address indexed newOwner);
+    // event for EVM logging ...not needed if we cannot change the owner
+    // event OwnerSet(address indexed oldOwner, address indexed newOwner);
     
     // modifier to check if caller is owner
     modifier isOwner() {
@@ -49,7 +22,7 @@ contract Owner {
         // This used to consume all gas in old EVM versions, but not anymore.
         // It is often a good idea to use 'require' to check if functions are called correctly.
         // As a second argument, you can also provide an explanation about what went wrong.
-        require(msg.sender == _owner, "Caller is not owner");
+        require(msg.sender == _owner, "Owner: Caller is not owner");
         _;
     }
     
@@ -59,7 +32,7 @@ contract Owner {
     constructor() {
         // console.log("Owner contract deployed by:", msg.sender);
         _owner = msg.sender; // 'msg.sender' is sender of current call, contract deployer for a constructor
-        emit OwnerSet(address(0), _owner);
+        // emit OwnerSet(address(0), _owner);
     }
 
     /**

@@ -3,11 +3,9 @@ pragma solidity ^0.8.19;
 
 import "./1_Owner.sol";
 
-contract PayBackPartnership is Owner{
-
-    using SafeMath for uint256;
+contract PayBackPartnership is Owner {
     //-------------------------Variables-------------------------
-    uint256 public numPartner; // starting from 1 ? Maybe fix?
+    uint256 public numPartner; // starting from 1
 
     struct Partner {
         string name;
@@ -16,13 +14,18 @@ contract PayBackPartnership is Owner{
         uint256 valueForToken;
     }
 
-    Partner[] public partners; // starting from 0
-    mapping(address => Partner) public addrToPartner;
-    mapping(uint256 => address) public partnerIdToAddr;
+    Partner[] public partners; // id is numPartner, 0 is Empty
+    // mapping(uint256 => address) public partnerIdToAddr;
+    // mapping(address => Partner) public addrToPartner;
+
+    mapping(address => uint256) public addrToPartnerId;
 
     //-------------------------Constructor-------------------------
     constructor() {
         numPartner = 0;
+        // first partner is Empty
+        Partner memory newPartner = Partner("", payable(address(0)), "", 0);
+        partners.push(newPartner);
     }
 
     //-------------------------Modifiers-------------------------
@@ -37,7 +40,7 @@ contract PayBackPartnership is Owner{
     // }
 
     modifier addrNotNull(address _addr) {
-        require(_addr != address(0), "Entered address is null.");
+        require(_addr != address(0), "Partner: Entered address is null.");
         _;
     }
     // modifier addrIsPartner(address _addr) {
@@ -58,57 +61,53 @@ contract PayBackPartnership is Owner{
         string memory _currency,
         uint256 _valueForToken
     ) public isOwner addrNotNull(_addr) returns (bool) {
-        //search for existing partner
-        Partner storage p = addrToPartner[_addr];
-
-        //check if the address is already not a partner
+        // An address can be partner once
         require(
-            p.walletAddr == address(0),
-            "Entered address is already a partner!"
+            addrToPartnerId[_addr] == 0,
+            "Partner: The address is already a partner!"
         );
 
-        //check that the address is not the owner
-        require(
-            _addr != _owner,
-            "The owner cannot be a partner!"
-        );
+        require(_addr != _owner, "Partner: The owner cannot be a partner!");
 
-         //check that the _valueForToken is minimum 1
+        //check that the _valueForToken is minimum 1
         require(
             _valueForToken >= 1,
-            "The value for a Token should be at least 1 in the currency."
+            "Partner: The value for a Token should be at least 1 in the currency."
         );
 
-        //check if requested tokens are more than 100?
-        // require(_tokens >= 100, "The requested tokens do not correspond with the minimum requirement 100.");
-
         //save the new Partner
-        Partner memory newPartner = Partner(_name, _addr, _currency, _valueForToken);
+        Partner memory newPartner = Partner(
+            _name,
+            _addr,
+            _currency,
+            _valueForToken
+        );
         partners.push(newPartner);
+        ++numPartner; //starts from 1
+        addrToPartnerId[_addr] = numPartner;
 
-        //increase the numbers/id of the partners
-        //first id is 1
-        numPartner = numPartner.add(1);
-
-        //fix the mappings
-        addrToPartner[_addr] = newPartner;
-        partnerIdToAddr[numPartner] = _addr;
-
-        //TODO: Send tokens
-        // sendTokensToPartner(numPartner);?
+        //verify that there is no error betweeen numPartner as id and array index
+        assert(partners[numPartner].walletAddr == _addr);
         emit PartnerAdded(numPartner, _name);
         return true;
     }
 
-    function calcPointsToEarn(uint256 _roundValue, uint256 _partnerId) public view returns (uint256){
+    function calcPointsToEarn(uint256 _roundValue, uint256 _partnerId)
+        public
+        view
+        returns (uint256)
+    {
         //_roundValue is the value without the 2 decimals rounded
         Partner storage p = partners[_partnerId];
         //the devision doesn't consider the values after decimal :)
-        uint256 tokens = _roundValue.div(p.valueForToken);
+        uint256 tokens = _roundValue / p.valueForToken;
         return tokens;
     }
 
-
+    function removePartner(uint256 id) isOwner public {
+        //gto remove the partner, the  partner should first transfer his tokens to the owner and then the owner can delete the entry.
+        delete partners[id];
+    }
 
     // function sendTokensToPartner(uint256 _partnerId) private {
     //     //TODO : check if there are enough available tokens from the token supply
