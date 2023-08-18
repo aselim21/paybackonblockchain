@@ -1,5 +1,5 @@
-const PayBackToken = artifacts.require("PayBackToken");
+const PayBackLocker = artifacts.require("PayBackLocker");
 	
 module.exports = function(deployer) {
-    deployer.deploy(PayBackToken, "PayBackToken", "PBT", 100000000, 0); //100m
+    deployer.deploy(PayBackLocker);
 }
