@@ -153,7 +153,7 @@ export default function AddPartnerForm() {
                 <DialogActions>
                     {resultIs ?
                         <div>
-                            <Button href={`${home}/dashboard`} autoFocus>
+                            <Button onClick={event =>  window.location.href='dashboard'} autoFocus>
                                 Zum Dashboard
                             </Button>
                             <Button onClick={() => { setResultIs(null) }}>
