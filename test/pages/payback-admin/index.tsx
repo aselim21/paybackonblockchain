@@ -52,8 +52,8 @@ export default function Payback() {
                     >
                         {/* <Box  sx={{ mt: '4rem' }} > */}
 
-                        <Button variant="contained">Client</Button>
-                        <Button variant="contained">Administrator</Button>
+                        {/* <Button variant="contained">Client</Button>
+                        <Button variant="contained">Administrator</Button> */}
                     </Box>
 
                     <Copyright sx={{ mt: 5 }} />

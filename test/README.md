@@ -1,3 +1,20 @@
+# RUN THE PROJECT
+
+1. `npm run dev`
+2. Open `http://localhost:3000/payback` on your browser.
+3. Then click on Partner verwalten or go to `http://localhost:3000/payback/partnerSettings`
+
+
+
+
+
+
+
+
+
+
+
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started

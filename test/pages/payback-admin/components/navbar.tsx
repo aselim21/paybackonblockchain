@@ -18,8 +18,9 @@ import {
 import Copyright from '../../components/Copyright';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useRouter } from 'next/router';
+const home = "/payback-admin"
 
-const pages = [{name: 'Dashboard', link:'/payback/dashboard'}, {name: 'Partner verwalten', link:'/payback/partnerSettings'}, {name: 'Anfragen', link:'/payback/'}];
+const pages = [{name: 'Dashboard', link:`${home}/dashboard`}, {name: 'Partner verwalten', link:`${home}/partnerSettings`}, {name: 'Anfragen', link:`${home}`}];
 const settings = ['Einstellungen', 'Logout'];
 
 const ThemePayback = createTheme({
@@ -76,7 +77,7 @@ export default function Navbar() {
                                 width: "10%",
                                 cursor: 'pointer'
                             }}
-                            onClick={() => router.push('/payback')}
+                            onClick={() => router.push(home)}
                             alt="Payback logo"
                             src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Payback_Logo_2023.svg/1920px-Payback_Logo_2023.svg.png"
                         />
