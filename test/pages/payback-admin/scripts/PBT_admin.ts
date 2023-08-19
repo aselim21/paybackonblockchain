@@ -17,9 +17,9 @@ export default class PBT_Admin {
         console.log(res);
         return res;
     }
-    public async addPartner(_name: string, _addr: string, _currency: string, _valueForOne: number): Promise<boolean> {
+    public async addPartner(_name: string, _addr: string, _currency: string, _valueForOne: number): Promise<any> {
 
-        const encoded_data = this.PayBackContract.methods.addPartner(_name, _addr, _currency, _valueForOne).encodeABI()
+        const encoded_data = this.PayBackContract.methods.addPartner(_name, _addr, _currency, _valueForOne).encodeABI();
 
         var tx = {
             from: process.env.PUBLIC_KEY_PayBack,
@@ -32,40 +32,13 @@ export default class PBT_Admin {
         try {
             const tx_signed = await this.web3.eth.accounts.signTransaction(tx, process.env.PRIVATE_KEY_PayBack);
             console.log(tx_signed);
-            const tx_sent = this.web3.eth.sendSignedTransaction(tx_signed.rawTransaction);
-            tx_sent.on("receipt", (receipt: any) => {
-                console.log("received recepit", receipt);
-                return true;
-            });
-            tx_sent.on("error", (err: any) => {
-                console.error("Tx sending error: ", err);
-                return false;
-            });
+            const tx_sent = await this.web3.eth.sendSignedTransaction(tx_signed.rawTransaction);
+            return tx_sent;
 
         } catch (err) {
             console.error("Couldn't sign transaction.", err);
-            return false;
+            return err;
         }
-
-
-        // if (tx_signed.returnSignature == true) {
-        //     const tx_sent = this.web3.eth.sendSignedTransaction(tx_signed.rawTransaction);
-        //     tx_sent.on("receipt", (receipt: any) => {
-        //         console.log("received recepit", receipt);
-        //         return true;
-        //     });
-        //     tx_sent.on("error", (err: any) => {
-        //         console.error("Tx sending error: ", err);
-        //         return false;
-        //     });
-        // } else if (tx_signed.returnSignature == false) {
-        //     console.error("Couldn't sign transaction.");
-        //     return false;
-        // }
-        window.setTimeout(() => {
-            console.log("this is the third message");
-          }, 60000); //1 min
-        return false;
     }
 
     public async getPartnerId(_addr: string): Promise<number> {

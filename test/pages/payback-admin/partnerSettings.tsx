@@ -21,6 +21,7 @@ import {
     DialogTitle,
 
 } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
 import Navbar from './components/navbar';
 import PBT_Admin from './scripts/PBT_admin';
 const home = "/payback-admin";
@@ -28,8 +29,10 @@ const home = "/payback-admin";
 export default function AddPartnerForm() {
     const [message, setMessage] = React.useState<string[]>(["", ""]);
     const [resultIs, setResultIs] = React.useState<boolean | null>(null);
+    const [loading, setLoading] = React.useState(false);
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        setLoading(true);
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         const req_data = {
@@ -38,24 +41,29 @@ export default function AddPartnerForm() {
             curr: data.get("currency")?.toString(),
             valueForToken: Number(data.get("value_for_token")),
         }
-        console.log(req_data)
         const admin = new PBT_Admin();
         try {
             const res = await admin.addPartner(req_data.name!, req_data.addr!, req_data.curr!, req_data.valueForToken!);
-            if (res == true) {
-                
+
+            if (!!res.transactionHash) {
                 const id = await admin.getPartnerId(req_data.addr!);
-                setMessage(["Partner was successfully created.", `Partner has ID ${id}. Now you can go to check the dashboard.`])
+                setMessage(["Partner wurde erfolgreich angemeldet", `Der neue Partner hat die ID ${id}.`])
                 setResultIs(true);
+                setLoading(false);
+
             } else {
-                setMessage(["Couldn't create partner.", "Plase check entered data."]);
+                setMessage(["Der Partner konnte nicht angemeldet werden.", "Bitte überprüfe die Daten und versuche noch einmal."]);
                 setResultIs(false);
+                setLoading(false);
+
             }
 
         } catch (err: any) {
             console.error(err)
-            setMessage(["Couldn't create partner.", err.toString()]);
+            setMessage(["Der Partner konnte nicht angemeldet werden.", err.toString()]);
             setResultIs(false);
+            setLoading(false);
+
         }
     };
     return (
@@ -116,15 +124,15 @@ export default function AddPartnerForm() {
                             />
                         </Grid>
                     </Grid>
-                    <Button
+                    <LoadingButton
                         type="submit"
                         fullWidth
                         variant="contained"
                         sx={{ mt: 3, mb: 2 }}
+                        loading={loading}
                     >
                         anmelden
-                    </Button>
-
+                    </LoadingButton>
                 </Box>
             </Box>
 
@@ -143,13 +151,19 @@ export default function AddPartnerForm() {
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    {resultIs ? <Button href={`${home}/dashboard`} autoFocus>
-                        Go to Dashboard
-                    </Button> : <Button autoFocus onClick={() => {
-                        setResultIs(null)
-                    }}>
-                        Try again
-                    </Button>}
+                    {resultIs ?
+                        <div>
+                            <Button href={`${home}/dashboard`} autoFocus>
+                                Zum Dashboard
+                            </Button>
+                            <Button onClick={() => { setResultIs(null) }}>
+                                Weitere Partner anmelden
+                            </Button>
+                        </div>
+                        :
+                        <Button autoFocus onClick={() => { setResultIs(null) }}>
+                            Nochmal veruschen
+                        </Button>}
                 </DialogActions>
             </Dialog>
         </>
