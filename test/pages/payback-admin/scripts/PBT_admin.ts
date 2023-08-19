@@ -14,7 +14,6 @@ export default class PBT_Admin {
 
     public async getOwner(): Promise<string> {
         const res = await this.PayBackContract.methods.getOwner().call();
-        console.log(res);
         return res;
     }
     public async addPartner(_name: string, _addr: string, _currency: string, _valueForOne: number): Promise<any> {
@@ -47,29 +46,46 @@ export default class PBT_Admin {
         console.log(res_number)
         return res_number;
     }
+
+    public async getContractInfo(): Promise<any> {
+        try {
+            const res = {
+                name: await this.PayBackContract.methods.name().call(),
+                symbol: await this.PayBackContract.methods.symbol().call(),
+                totalSupply: Number(await this.PayBackContract.methods.totalSupply().call()),
+            }
+            return res;
+        } catch (err: any) {
+            console.error("Couldn't gather contract info.");
+            return err;
+        }
+    }
+
+    public async getCurrentTime():Promise<any>{
+        try {
+            const res = await this.PayBackContract.methods.getCurrentTime().call();
+            return Number(res);
+        } catch (err: any) {
+            console.error("Couldn't read current time.");
+            return err;
+        }
+    }
+    public async getNumPartners():Promise<any>{
+        try {
+            const res = await this.PayBackContract.methods.numPartner().call();
+            return Number(res);
+        } catch (err: any) {
+            console.error("Couldn't read numPartner.");
+            return err;
+        }
+    }
+    public async getNumClients():Promise<any>{
+        try {
+            const res = await this.PayBackContract.methods.numClient().call();
+            return Number(res);
+        } catch (err: any) {
+            console.error("Couldn't read numClients.");
+            return err;
+        }
+    }
 }
-// class PBT_Admin {
-//     const web3 = new Web3(new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_URL!));
-//     const PayBackContract = new this.web3.eth.Contract(abi, process.env.CONTRACT_ADDRESS);
-//     // PayBackContract: null,
-
-//     // web3: new Web3(new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_URL!)),
-//     // PayBackContract: new web3.eth.Contract(abi, process.env.CONTRACT_ADDRESS),
-//     async function getOwner () {
-//         const res = await PayBackContract.methods.getOwner().call();
-//         console.log(res)
-//     }
-// };
-
-// async function PB_getOwner() {
-//     const web3 = new Web3(new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_URL!));
-//     const PayBackContract = new web3.eth.Contract(abi, process.env.CONTRACT_ADDRESS);
-//     const res = await PayBackContract.methods.getOwner().call();
-//     console.log(res)
-// }
-// async function PB_addPartner() {
-//     const web3 = new Web3(new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_URL!));
-//     const PayBackContract = new web3.eth.Contract(abi, process.env.CONTRACT_ADDRESS);
-//     const res = await PayBackContract.methods.getOwner().call();
-//     console.log(res)
-// }
