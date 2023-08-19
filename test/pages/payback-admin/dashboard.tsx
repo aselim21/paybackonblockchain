@@ -19,18 +19,20 @@ import {
     DialogContent,
     DialogContentText,
     DialogTitle,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import Navbar from './components/navbar';
 import PBT_Admin from './scripts/PBT_admin';
-const home = "/payback-admin";
+import Partner from './scripts/data_structures';
 import SyncIcon from '@mui/icons-material/Sync';
 
-async function getData() {
-    const admin = new PBT_Admin();
-    const res = await admin.getContractInfo();
-    return res;
-}
 
 export default function AddPartnerForm() {
     const admin = new PBT_Admin();
@@ -44,8 +46,7 @@ export default function AddPartnerForm() {
     const [currentTime, setCurrentTime] = React.useState<string>("");
     const [nrPartners, setNrPartners] = React.useState<number>(0);
     const [nrClients, setNrClients] = React.useState<number>(0);
-
-
+    const [rows, setRows] = React.useState<Partner[]>([]);
 
     async function updateCurrentTimeAsDate() {
         const res = await admin.getCurrentTime();
@@ -87,9 +88,10 @@ export default function AddPartnerForm() {
         updateNumberOfPartners();
         updateNumberOfClients();
 
-
-
-
+        admin.getAllPartners().then(res=>{
+            console.log(res);
+            setRows(res);
+        })
     }, []);
 
     return (
@@ -172,7 +174,7 @@ export default function AddPartnerForm() {
                     borderRadius: 1,
                 }}
             >
-                <Box sx={{ width: 3 / 7 }} bgcolor="grey.300">
+                <Box sx={{ width: 7 / 10 }} bgcolor="grey.300">
                     <Box
                         sx={{
                             display: 'flex',
@@ -184,8 +186,8 @@ export default function AddPartnerForm() {
                             alignItems: 'center',
                             alignContent: 'center'
                         }}>
-                        <Typography variant="body2" gutterBottom sx={{ mr: 1 }}>
-                            number of partners: {nrPartners}
+                        <Typography variant="body1" gutterBottom sx={{ mx: 1 }}>
+                            Number of partners: {nrPartners}
                         </Typography>
                         <SyncIcon
                             sx={{
@@ -193,8 +195,37 @@ export default function AddPartnerForm() {
                             }}
                             onClick={event => updateNumberOfPartners()} />
                     </Box>
+                    <TableContainer component={Paper}>
+                        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>ID</TableCell>
+                                    <TableCell align="right">Name</TableCell>
+                                    <TableCell align="right">Address</TableCell>
+                                    <TableCell align="right">Currency</TableCell>
+                                    <TableCell align="right">Value for token</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {rows.map((row : Partner) => (
+                                    <TableRow
+                                        key={row.name}
+                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                    >
+                                        <TableCell component="th" scope="row">
+                                            {row.id}
+                                        </TableCell>
+                                        <TableCell align="right">{row.name}</TableCell>
+                                        <TableCell align="right">{row.address}</TableCell>
+                                        <TableCell align="right">{row.currency}</TableCell>
+                                        <TableCell align="right">{row.valueForToken}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 </Box>
-                <Box sx={{ width: 3 / 7 }} bgcolor="grey.300">
+                <Box sx={{ width: 2 / 10 }} bgcolor="grey.300">
                     <Box
                         sx={{
                             display: 'flex',
@@ -206,8 +237,8 @@ export default function AddPartnerForm() {
                             alignItems: 'center',
                             alignContent: 'center'
                         }}>
-                        <Typography variant="body2" gutterBottom sx={{ mr: 1 }}>
-                            number of clients: {nrClients}
+                        <Typography variant="body1" gutterBottom sx={{ mx: 1 }}>
+                            Number of clients: {nrClients}
                         </Typography>
                         <SyncIcon
                             sx={{

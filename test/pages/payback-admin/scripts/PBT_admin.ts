@@ -1,6 +1,8 @@
 import { setTimeout } from 'timers/promises';
 import abi from '../../../public/ABI_PayBackToken.json'
 import Web3 from 'web3';
+import Partner from './data_structures';
+
 
 export default class PBT_Admin {
     private web3: any;
@@ -61,7 +63,7 @@ export default class PBT_Admin {
         }
     }
 
-    public async getCurrentTime():Promise<any>{
+    public async getCurrentTime(): Promise<any> {
         try {
             const res = await this.PayBackContract.methods.getCurrentTime().call();
             return Number(res);
@@ -70,7 +72,7 @@ export default class PBT_Admin {
             return err;
         }
     }
-    public async getNumPartners():Promise<any>{
+    public async getNumPartners(): Promise<any> {
         try {
             const res = await this.PayBackContract.methods.numPartner().call();
             return Number(res);
@@ -79,12 +81,38 @@ export default class PBT_Admin {
             return err;
         }
     }
-    public async getNumClients():Promise<any>{
+    public async getNumClients(): Promise<any> {
         try {
             const res = await this.PayBackContract.methods.numClient().call();
             return Number(res);
         } catch (err: any) {
             console.error("Couldn't read numClients.");
+            return err;
+        }
+    }
+
+    public async getPartner(_id: number): Promise<any> {
+        try {
+            const res = await this.PayBackContract.methods.partners(_id).call();
+            console.log(res);
+            return new Partner(_id, res.name, res.walletAddr, res.currency, Number(res.valueForToken));
+        } catch (err: any) {
+            console.error("Couldn't get partner with id: ", _id);
+            return err;
+        }
+    }
+
+    public async getAllPartners(): Promise<Partner[]> {
+        let arr: Partner[] = [];
+        try {
+            const nr = await this.getNumPartners();
+            for (let i = 1; i <= nr; i++) {
+                const p = await this.getPartner(i);
+                arr.push(p);
+            }
+            return arr;
+        } catch (err: any) {
+            console.error("Couldn't get partners.");
             return err;
         }
     }
