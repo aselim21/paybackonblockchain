@@ -272,6 +272,7 @@ contract PayBackToken is IERC20, PayBackPartnership, PayBackClients {
     //----------------------------------Additional functions----------------------------------
 
     function loadTotalSupply(uint256 _amount) public isOwner returns (bool) {
+        totalSupply = totalSupply + _amount;
         _balances[_owner] = _balances[_owner] + _amount;
         return true;
     }
