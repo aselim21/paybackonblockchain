@@ -231,35 +231,33 @@ contract PayBackToken is IERC20, PayBackPartnership, PayBackClients {
         address _from,
         address _to,
         uint256 _amount
-    ) public returns (bool) {
+    ) public returns (bool){
         address spender = msg.sender;
 
-        bool spending = _spendAllowance(_from, spender, _amount);
-        if (spending == true) {
-            _transfer(_from, _to, _amount);
-        } else {
-            return false;
-        }
+        _spendAllowance(_from, spender, _amount);
+        _transfer(_from, _to, _amount);
         return true;
     }
 
     function _spendAllowance(
-        address _spender,
         address _owner,
-        uint256 _amount
-    ) private returns (bool) {
-        uint256 transferred = _transferred[_owner][_spender];
-        uint256 allowed = _allowance[_owner][_spender];
+        address _spender,
+        uint256 _amount //10
+    ) private {
+        uint256 transferred = _transferred[_owner][_spender]; //0
+        uint256 allowed = _allowance[_owner][_spender]; //0
         uint256 spendingRest = 0;
 
         if (transferred < allowed) {
-            spendingRest = allowed - transferred;
+            spendingRest = allowed - transferred; //0 - 0
         }
-        if (_amount <= spendingRest) {
-            _transferred[_owner][_spender] = transferred + _amount;
-            return true;
-        }
-        return false;
+        require(
+            spendingRest >= _amount,
+            "ERC20: amount is higher than the spending rest allowed."
+        );
+
+        _transferred[_owner][_spender] = transferred + _amount;
+        // return true;
     }
 
     // function _spendAllowance(
