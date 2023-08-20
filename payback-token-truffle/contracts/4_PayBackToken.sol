@@ -166,6 +166,15 @@ contract PayBackToken is IERC20, PayBackPartnership, PayBackClients {
         return _allowance[_owner][_spender];
     }
 
+    function transferredFromAllowance(address _owner, address _spender)
+        public
+        view
+        returns (uint256)
+    {
+        //the owner is the owner of the tokens that allows someone else to transfer the amount for him
+        return _transferred[_owner][_spender];
+    }
+
     function approve(address _spender, uint256 _amount) public returns (bool) {
         // partners and clients can allow addresses or smart contracts to manage their tokens, even the owner is allowed to be the spender
 
