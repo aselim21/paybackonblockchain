@@ -26,36 +26,18 @@ export default function Payback() {
         <>
             <Navbar />
             <ThemeProvider theme={ThemePayback}>
-                <Box
-                    component="img"
-                    sx={{
-                        width: "60%",
-                        mt: '4rem'
-                    }}
-                    justifyContent="center"
-                    alt="Payback add"
-                    src="https://www.payback.group/fileadmin/bilder_pl/220210_PB_DE_PR_Bonus_Award_Sieger_4Kategorien.jpg"
-                />
-                <Container component="main" maxWidth="xs">
 
+                <Container component="main" maxWidth='md'>
                     <Box
+                        component="img"
                         sx={{
-                            display: 'flex',
-                            justifyContent: 'space-around',
-                            p: 1,
-                            m: 1,
-                            // mt: 30,
-                            // bgcolor: 'background.paper',
-                            borderRadius: 1,
+                            width: "100%",
+                            mt: '4rem'
                         }}
-                        color='primary.main'
-                    >
-                        {/* <Box  sx={{ mt: '4rem' }} > */}
-
-                        {/* <Button variant="contained">Client</Button>
-                        <Button variant="contained">Administrator</Button> */}
-                    </Box>
-
+                        justifyContent="center"
+                        alt="Payback add"
+                        src="https://www.payback.group/fileadmin/bilder_pl/220210_PB_DE_PR_Bonus_Award_Sieger_4Kategorien.jpg"
+                    />
                     <Copyright sx={{ mt: 5 }} />
                 </Container>
             </ThemeProvider>

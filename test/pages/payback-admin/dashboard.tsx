@@ -72,10 +72,6 @@ export default function AddPartnerForm() {
     const [epochWeeks, setEpochWeeks] = React.useState<number>(0);
     const [futureEpochRes, setFutureEpochRes] = React.useState<number>();
 
-
-
-
-
     async function updateCurrentTimeAsDate() {
         const res = await admin.getCurrentTime();
         const d = new Date(res * 1000);
@@ -179,17 +175,17 @@ export default function AddPartnerForm() {
                     p: 1,
                     m: 1,
                     bgcolor: 'background.paper',
-                    borderRadius: 1,
+                    borderRadius: 2,
 
                 }}
                 noValidate
                 autoComplete="off"
             >
-                <Typography variant="body1" gutterBottom>
+                <Typography variant="h6" gutterBottom>
                     {contractInfo.name} (total: {contractInfo.totalSupply} {contractInfo.symbol})
                 </Typography>
 
-                <Typography variant="body2" gutterBottom>
+                <Typography variant="body1" gutterBottom>
                     owner: {owner}
                 </Typography>
                 <Box
@@ -199,25 +195,22 @@ export default function AddPartnerForm() {
                         alignItems: 'strech',
                         alignContent: 'center'
                     }}>
-                    <Typography variant="body2" gutterBottom sx={{ mr: 1 }}>
+                    <Typography variant="body1" gutterBottom sx={{ mr: 1 }}>
                         current Time: {currentTime}
                     </Typography>
                     <SyncIcon
                         sx={{
                             cursor: 'pointer'
                         }}
-                        onClick={event => updateCurrentTimeAsDate()} />
+                        onClick={ev => updateCurrentTimeAsDate()} />
                 </Box>
             </Box>
             <Box
                 sx={{
                     display: 'flex',
                     justifyContent: 'space-evenly',
-                    // p: 1,
                     m: 1,
-                    // borderRadius: 1,
-                }}
-            >
+                }}>
                 <Box
                     sx={{
                         width: 13 / 20,
@@ -249,8 +242,7 @@ export default function AddPartnerForm() {
                             flexDirection: 'row',
                             alignItems: 'strech',
                             alignContent: 'center',
-                            my:1,
-                            
+                            my: 1,
                         }}>
                             <TextField label="Address" variant="outlined" value={partnerAddr} size="small" onChange={(ev) => { setPartnerAddr(ev.target.value) }} />
                             <Button size="small" variant="contained" onClick={() => checkPartnerID(partnerAddr)}>Go</Button>
@@ -291,17 +283,12 @@ export default function AddPartnerForm() {
                         width: 6 / 20,
                         borderRadius: 2,
                         bgcolor: 'background.paper',
-                    }}
-                >
+                    }}>
                     <Box
                         id="nr-clients-checker"
                         sx={{
                             display: 'flex',
                             flexDirection: 'row',
-                            // p: 1,
-                            // m: 1,
-                            // bgcolor: 'background.paper',
-                            // borderRadius: 1,
                             alignItems: 'strech',
                             alignContent: 'center'
                         }}>
@@ -321,7 +308,7 @@ export default function AddPartnerForm() {
                             flexDirection: 'row',
                             alignItems: 'strech',
                             alignContent: 'center',
-                            my:1,
+                            my: 1,
                         }}>
                             <TextField label="Address" variant="outlined" value={clientAddr} size="small" onChange={(ev) => { setClientAddr(ev.target.value) }} />
                             <Button size="small" variant="contained" onClick={() => checkClientID(clientAddr)}>Go</Button>
@@ -335,13 +322,12 @@ export default function AddPartnerForm() {
                             flexDirection: 'row',
                             alignItems: 'strech',
                             alignContent: 'center',
-                            my:1,
+                            my: 1,
                         }}>
                             <TextField label="Address" variant="outlined" value={checkBalanceAddr} size="small" onChange={(ev) => { setCheckBalanceAddr(ev.target.value) }} />
                             <Button size="small" variant="contained" onClick={() => checkBalanceOf(checkBalanceAddr)}>Go</Button>
                         </Box>
                     </Box>
-
                     <Box id="allowance-checker"
                         sx={{ m: 1 }}>
                         <Typography>Allowance is: {allowanceRes} </Typography>
@@ -350,7 +336,7 @@ export default function AddPartnerForm() {
                             flexDirection: 'row',
                             alignItems: 'strech',
                             alignContent: 'center',
-                            my:1,
+                            my: 1,
                         }}>
                             <TextField label="Owner address" variant="outlined" value={allowanceOwnerAddr} size="small" onChange={(ev) => { setAllowanceOwnerAddr(ev.target.value) }} />
                             <TextField label="Spender address" variant="outlined" value={allowanceSpenderAddr} size="small" onChange={(ev) => { setAllowanceSpenderAddr(ev.target.value) }} />
@@ -365,7 +351,7 @@ export default function AddPartnerForm() {
                             flexDirection: 'row',
                             alignItems: 'strech',
                             alignContent: 'center',
-                            my:1,
+                            my: 1,
                         }}>
                             <TextField label="Round value" variant="outlined" value={pointsValue} size="small" onChange={(ev) => { setPointsValue(Number(ev.target.value)) }} />
                             <TextField label="Partner ID" variant="outlined" value={pointsPartnerId} size="small" onChange={(ev) => { setPointsPartnerId(Number(ev.target.value)) }} />
@@ -380,7 +366,7 @@ export default function AddPartnerForm() {
                             flexDirection: 'row',
                             alignItems: 'strech',
                             alignContent: 'center',
-                            my:1,
+                            my: 1,
                         }}>
                             <TextField label="Hours" variant="outlined" value={epochHours} size="small" onChange={(ev) => { setEpochHours(Number(ev.target.value)) }} />
                             <TextField label="Days" variant="outlined" value={epochDays} size="small" onChange={(ev) => { setEpochDays(Number(ev.target.value)) }} />
