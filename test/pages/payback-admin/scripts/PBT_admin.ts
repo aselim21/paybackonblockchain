@@ -116,4 +116,62 @@ export default class PBT_Admin {
             return err;
         }
     }
+
+    public async getPartnerID(_addr: string): Promise<any> {
+        try {
+            const res = await this.PayBackContract.methods.addrToPartnerId(_addr).call();
+            return res;
+        } catch (err: any) {
+            console.error("Couldn't get partner with addr: ", _addr);
+            return err;
+        }
+    }
+    public async getClientID(_addr: string): Promise<any> {
+        try {
+            const res = await this.PayBackContract.methods.addrToClientId(_addr).call();
+            return res;
+        } catch (err: any) {
+            console.error("Couldn't get client with addr: ", _addr);
+            return err;
+        }
+    }
+    public async getBalanceOf(_addr: string): Promise<any> {
+        try {
+            const res = await this.PayBackContract.methods.balanceOf(_addr).call();
+            return Number(res);
+        } catch (err: any) {
+            console.error("Couldn't get balance of: ", _addr);
+            return err;
+        }
+    }
+
+    public async getAllowance(_owner: string, _spender: string): Promise<any> {
+        try {
+            const res = await this.PayBackContract.methods.allowance(_owner, _spender).call();
+            return Number(res);
+        } catch (err: any) {
+            console.error("Couldn't get allowance of owner: ", _owner, " and spender: ", _spender);
+            return err;
+        }
+    }
+
+    public async getPointsToEarn(_roundValue: number, _partnerId: number): Promise<any> {
+        try {
+            const res = await this.PayBackContract.methods.calcPointsToEarn(_roundValue, _partnerId).call();
+            return Number(res);
+        } catch (err: any) {
+            console.error("Couldn't get points to earn of round value: ", _roundValue, " and partnerID: ", _partnerId);
+            return err;
+        }
+    }
+
+    public async getFutureEpoch(_hours: number, _days:number, _weeks:number ): Promise<any> {
+        try {
+            const res = await this.PayBackContract.methods.calcFutureEpoch(_hours, _days, _weeks).call();
+            return Number(res);
+        } catch (err: any) {
+            console.error("Couldn't get future epoch value for h:", _hours, " d:", _days, " w:", _weeks);
+            return err;
+        }
+    }
 }

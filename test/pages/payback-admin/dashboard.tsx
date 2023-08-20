@@ -44,16 +44,44 @@ export default function AddPartnerForm() {
     });
     const [owner, setOwner] = React.useState<string>("");
     const [currentTime, setCurrentTime] = React.useState<string>("");
+
     const [nrPartners, setNrPartners] = React.useState<number>(0);
     const [nrClients, setNrClients] = React.useState<number>(0);
+
     const [rows, setRows] = React.useState<Partner[]>([]);
+
+    const [clientAddr, setClientAddr] = React.useState<string>("");
+    const [isClientResult, setIsClientResult] = React.useState<string>("");
+
+    const [partnerAddr, setPartnerAddr] = React.useState<string>("");
+    const [isPartnerResult, setIsPartnerResult] = React.useState<string>("");
+
+    const [checkBalanceAddr, setCheckBalanceAddr] = React.useState<string>("");
+    const [balanceOfRes, setBalanceOfRes] = React.useState<number>();
+
+    const [allowanceOwnerAddr, setAllowanceOwnerAddr] = React.useState<string>("");
+    const [allowanceSpenderAddr, setAllowanceSpenderAddr] = React.useState<string>("");
+    const [allowanceRes, setAllowanceRes] = React.useState<number>();
+
+    const [pointsValue, setPointsValue] = React.useState<number>(0);
+    const [pointsPartnerId, setPointsPartnerId] = React.useState<number>(0);
+    const [pointsToEarnRes, setPointsToEarnRes] = React.useState<number>();
+
+    const [epochHours, setEpochHours] = React.useState<number>(0);
+    const [epochDays, setEpochDays] = React.useState<number>(0);
+    const [epochWeeks, setEpochWeeks] = React.useState<number>(0);
+    const [futureEpochRes, setFutureEpochRes] = React.useState<number>();
+
+
+
+
 
     async function updateCurrentTimeAsDate() {
         const res = await admin.getCurrentTime();
         const d = new Date(res * 1000);
         const d_ger = d.toLocaleString('de', { timeZone: 'Europe/Berlin', timeZoneName: 'long' });
         console.log("Epoch:", res, "\nDate: ", d_ger);
-        setCurrentTime(d_ger);
+        setCurrentTime(d_ger + " (epoch: " + res + ")");
         return d_ger;
     }
 
@@ -68,6 +96,53 @@ export default function AddPartnerForm() {
         const res = await admin.getNumClients();
         console.log("Number of clients:", res);
         setNrClients(res);
+        return res;
+    }
+
+    async function checkClientID(_addr: string) {
+        if (!!!_addr) return;
+        const res = await admin.getClientID(_addr);
+        console.log("Client ID:", res);
+        res == 0 ? setIsClientResult("not a client") : setIsClientResult(res.toString());
+        return res;
+    }
+
+    async function checkPartnerID(_addr: string) {
+        if (!!!_addr) return;
+        const res = await admin.getPartnerID(_addr);
+        console.log("Partner ID:", res);
+        res == 0 ? setIsPartnerResult("not a partner") : setIsPartnerResult(res.toString());
+        return res;
+    }
+
+    async function checkBalanceOf(_addr: string) {
+        if (!!!_addr) return;
+        const res = await admin.getBalanceOf(_addr);
+        console.log("Balance of:", res);
+        setBalanceOfRes(res);
+        return res;
+    }
+
+    async function checkAllowance(_ownerAddr: string, _spenderAddr: string) {
+        if (!!!_ownerAddr || !!!_spenderAddr) return;
+        const res = await admin.getAllowance(_ownerAddr, _spenderAddr);
+        console.log("Allowance is:", res);
+        setAllowanceRes(res);
+        return res;
+    }
+
+    async function checkPointsToEarn(_value: number, _partnerId: number) {
+        if (!!!_value || !!!_partnerId) return;
+        const res = await admin.getPointsToEarn(_value, _partnerId);
+        console.log("Points to earn are:", res);
+        setPointsToEarnRes(res);
+        return res;
+    }
+
+    async function checkFutureEpoch(_hours: number, _days: number, _weeks: number) {
+        const res = await admin.getFutureEpoch(_hours, _days, _weeks);
+        console.log("Future epoch value is:", res);
+        setFutureEpochRes(res);
         return res;
     }
 
@@ -88,7 +163,7 @@ export default function AddPartnerForm() {
         updateNumberOfPartners();
         updateNumberOfClients();
 
-        admin.getAllPartners().then(res=>{
+        admin.getAllPartners().then(res => {
             console.log(res);
             setRows(res);
         })
@@ -174,8 +249,10 @@ export default function AddPartnerForm() {
                     borderRadius: 1,
                 }}
             >
-                <Box sx={{ width: 7 / 10 }} bgcolor="grey.300">
+                <Box sx={{ width: 13 / 20 }}>
                     <Box
+                        id="nr-partners-checker"
+                        
                         sx={{
                             display: 'flex',
                             flexDirection: 'row',
@@ -195,6 +272,18 @@ export default function AddPartnerForm() {
                             }}
                             onClick={event => updateNumberOfPartners()} />
                     </Box>
+                    <Box id="partner-checker" sx={{ m: 1 }}>
+                        <Typography>Get partner ID: {isPartnerResult}</Typography>
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            alignContent: 'center'
+                        }}>
+                            <TextField label="Address" variant="outlined" value={partnerAddr} size="small" onChange={(ev) => { setPartnerAddr(ev.target.value) }} />
+                            <Button size="small" variant="contained" onClick={() => checkPartnerID(partnerAddr)}>Go</Button>
+                        </Box>
+                    </Box>
                     <TableContainer component={Paper}>
                         <Table sx={{ minWidth: 650 }} aria-label="simple table">
                             <TableHead>
@@ -207,7 +296,7 @@ export default function AddPartnerForm() {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {rows.map((row : Partner) => (
+                                {rows.map((row: Partner) => (
                                     <TableRow
                                         key={row.name}
                                         sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -225,8 +314,9 @@ export default function AddPartnerForm() {
                         </Table>
                     </TableContainer>
                 </Box>
-                <Box sx={{ width: 2 / 10 }} bgcolor="grey.300">
+                <Box sx={{ width: 6 / 20 }}>
                     <Box
+                        id="nr-clients-checker"
                         sx={{
                             display: 'flex',
                             flexDirection: 'row',
@@ -245,6 +335,76 @@ export default function AddPartnerForm() {
                                 cursor: 'pointer'
                             }}
                             onClick={event => updateNumberOfClients()} />
+                    </Box>
+                    <Box id="client-checker" sx={{ m: 1 }}>
+                        <Typography>Get client ID: {isClientResult} </Typography>
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            alignContent: 'center'
+                        }}>
+                            <TextField label="Address" variant="outlined" value={clientAddr} size="small" onChange={(ev) => { setClientAddr(ev.target.value) }} />
+                            <Button size="small" variant="contained" onClick={() => checkClientID(clientAddr)}>Go</Button>
+                        </Box>
+                    </Box>
+                    <Box id="balance-checker"
+                        sx={{ m: 1 }}>
+                        <Typography>Balance is: {balanceOfRes} </Typography>
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            alignContent: 'center'
+                        }}>
+                            <TextField label="Address" variant="outlined" value={checkBalanceAddr} size="small" onChange={(ev) => { setCheckBalanceAddr(ev.target.value) }} />
+                            <Button size="small" variant="contained" onClick={() => checkBalanceOf(checkBalanceAddr)}>Go</Button>
+                        </Box>
+                    </Box>
+
+                    <Box id="allowance-checker"
+                        sx={{ m: 1 }}>
+                        <Typography>Allowance is: {allowanceRes} </Typography>
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            alignContent: 'center'
+                        }}>
+                            <TextField label="Owner address" variant="outlined" value={allowanceOwnerAddr} size="small" onChange={(ev) => { setAllowanceOwnerAddr(ev.target.value) }} />
+                            <TextField label="Spender address" variant="outlined" value={allowanceSpenderAddr} size="small" onChange={(ev) => { setAllowanceSpenderAddr(ev.target.value) }} />
+                            <Button size="small" variant="contained" onClick={() => checkAllowance(allowanceOwnerAddr, allowanceSpenderAddr)}>Go</Button>
+                        </Box>
+                    </Box>
+                    <Box id="pointsToEarn-checker"
+                        sx={{ m: 1 }}>
+                        <Typography>Points to earn are: {pointsToEarnRes} </Typography>
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            alignContent: 'center'
+                        }}>
+                            <TextField label="Round value" variant="outlined" value={pointsValue} size="small" onChange={(ev) => { setPointsValue(Number(ev.target.value)) }} />
+                            <TextField label="Partner ID" variant="outlined" value={pointsPartnerId} size="small" onChange={(ev) => { setPointsPartnerId(Number(ev.target.value)) }} />
+                            <Button size="small" variant="contained" onClick={() => checkPointsToEarn(pointsValue!, pointsPartnerId!)}>Go</Button>
+                        </Box>
+                    </Box>
+                    <Box id="futureEpoch-checker"
+                        sx={{ m: 1 }}>
+                        <Typography>Future epoch value is: {futureEpochRes} </Typography>
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            alignContent: 'center'
+                        }}>
+                            <TextField label="Hours" variant="outlined" value={epochHours} size="small" onChange={(ev) => { setEpochHours(Number(ev.target.value)) }} />
+                            <TextField label="Days" variant="outlined" value={epochDays} size="small" onChange={(ev) => { setEpochDays(Number(ev.target.value)) }} />
+                            <TextField label="Weeks" variant="outlined" value={epochWeeks} size="small" onChange={(ev) => { setEpochWeeks(Number(ev.target.value)) }} />
+
+                            <Button size="small" variant="contained" onClick={() => checkFutureEpoch(epochHours!, epochDays!, epochWeeks!)}>Go</Button>
+                        </Box>
                     </Box>
                 </Box>
             </Box>
