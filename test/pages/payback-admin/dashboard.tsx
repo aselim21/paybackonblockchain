@@ -72,12 +72,12 @@ export default function AddPartnerForm() {
     const [epochWeeks, setEpochWeeks] = React.useState<number>(0);
     const [futureEpochRes, setFutureEpochRes] = React.useState<number>();
 
-    async function updateCurrentTimeAsDate() {
+    async function updateCurrentTimeAsDateFromBlockchain() {
         const res = await admin.getCurrentTime();
         const d = new Date(res * 1000);
         const d_ger = d.toLocaleString('de', { timeZone: 'Europe/Berlin', timeZoneName: 'long' });
         console.log("Epoch:", res, "\nDate: ", d_ger);
-        setCurrentTime(d_ger + " (epoch: " + res + ")");
+        setCurrentTime("Epoch (GMT): " + res + ". " + "Local date: " + d_ger );
         return d_ger;
     }
 
@@ -136,8 +136,13 @@ export default function AddPartnerForm() {
     }
 
     async function checkFutureEpoch(_hours: number, _days: number, _weeks: number) {
-        const res = await admin.getFutureEpoch(_hours, _days, _weeks);
-        console.log("Future epoch value is:", res);
+        const now = Date.now(); // Unix timestamp in milliseconds
+        console.log( "Now epoch date in GMT:", now );
+        const d = new Date(now * 1000);
+        console.log("Now date in GMT", d)
+        const timeToAdd = (3600 * _hours) + (86400 * _days) + (604800 * _weeks);
+        const res = now + timeToAdd;
+        console.log("Future epoch date in GMT is:", res);
         setFutureEpochRes(res);
         return res;
     }
@@ -154,7 +159,7 @@ export default function AddPartnerForm() {
             setOwner(res);
         });
 
-        updateCurrentTimeAsDate();
+        updateCurrentTimeAsDateFromBlockchain();
 
         updateNumberOfPartners();
         updateNumberOfClients();
@@ -196,13 +201,13 @@ export default function AddPartnerForm() {
                         alignContent: 'center'
                     }}>
                     <Typography variant="body1" gutterBottom sx={{ mr: 1 }}>
-                        current Time: {currentTime}
+                        current time in blockchain: {currentTime}
                     </Typography>
                     <SyncIcon
                         sx={{
                             cursor: 'pointer'
                         }}
-                        onClick={ev => updateCurrentTimeAsDate()} />
+                        onClick={ev => updateCurrentTimeAsDateFromBlockchain()} />
                 </Box>
             </Box>
             <Box
@@ -360,7 +365,7 @@ export default function AddPartnerForm() {
                     </Box>
                     <Box id="futureEpoch-checker"
                         sx={{ m: 1 }}>
-                        <Typography>Future epoch value is: {futureEpochRes} </Typography>
+                        <Typography>Future epoch value from now (in GMT) is: {futureEpochRes} </Typography>
                         <Box sx={{
                             display: 'flex',
                             flexDirection: 'row',

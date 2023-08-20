@@ -25,7 +25,7 @@ import { LoadingButton } from '@mui/lab';
 import Navbar from './components/navbar';
 import PBT_Admin from './scripts/PBT_admin';
 
-export default function AddPartnerForm() {
+export default function ManagePartners() {
     const [message, setMessage] = React.useState<string[]>(["", ""]);
     const [resultIs, setResultIs] = React.useState<boolean | null>(null);
     const [loading, setLoading] = React.useState(false);
@@ -73,8 +73,6 @@ export default function AddPartnerForm() {
             return;
         }
     };
-
-
 
     const handleDeletePartner = async (event: React.FormEvent<HTMLFormElement>) => {
         setLoading(true);
@@ -125,10 +123,12 @@ export default function AddPartnerForm() {
                     marginTop: 8,
                     alignItems: 'center',
                     alignSelf: 'center',
+                    flexWrap: 'wrap',
+                    flexDirection: 'row',
                 }}>
                 <Box
                     sx={{
-                        width: 13 / 20,
+                        maxWidth: 13 / 20,
                         bgcolor: 'background.paper',
                         borderRadius: 2,
                         p: 1,
@@ -196,7 +196,7 @@ export default function AddPartnerForm() {
 
                 <Box
                     sx={{
-                        width: 5 / 20,
+                        maxWidth: 5 / 20,
                         bgcolor: 'background.paper',
                         borderRadius: 2,
                         p: 1,
@@ -259,7 +259,7 @@ export default function AddPartnerForm() {
                         </div>
                         :
                         <Button autoFocus onClick={() => { setResultIs(null) }}>
-                            Nochmal veruschen
+                            Schließen
                         </Button>}
                 </DialogActions>
             </Dialog>

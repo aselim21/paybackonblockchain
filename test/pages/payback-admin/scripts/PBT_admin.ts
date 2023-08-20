@@ -180,6 +180,16 @@ export default class PBT_Admin {
         }
     }
 
+    public async getTransferredFromAllowance(_owner: string, _spender: string): Promise<any> {
+        try {
+            const res = await this.PayBackContract.methods.transferredFromAllowance(_owner, _spender).call();
+            return Number(res);
+        } catch (err: any) {
+            console.error("Couldn't get transferred of allowance of owner: ", _owner, " and spender: ", _spender);
+            return err;
+        }
+    }
+
     public async getPointsToEarn(_roundValue: number, _partnerId: number): Promise<any> {
         try {
             const res = await this.PayBackContract.methods.calcPointsToEarn(_roundValue, _partnerId).call();
@@ -190,13 +200,83 @@ export default class PBT_Admin {
         }
     }
 
-    public async getFutureEpoch(_hours: number, _days: number, _weeks: number): Promise<any> {
+    // public async getFutureEpoch(_hours: number, _days: number, _weeks: number): Promise<any> {
+    //     try {
+    //         const res = await this.PayBackContract.methods.calcFutureEpoch(_hours, _days, _weeks).call();
+    //         return Number(res);
+    //     } catch (err: any) {
+    //         console.error("Couldn't get future epoch value for h:", _hours, " d:", _days, " w:", _weeks);
+    //         return err;
+    //     }
+    // }
+    public async transfer(_to: string, _amount: number): Promise<any> {
+
+        const encoded_data = this.PayBackContract.methods.transfer(_to, _amount).encodeABI();
+
+        var tx = {
+            from: process.env.PUBLIC_KEY_PayBack,
+            to: process.env.CONTRACT_ADDRESS,
+            gas: this.web3.utils.toHex(545200), // 30400
+            gasPrice: await this.web3.eth.getGasPrice(),//this.web3.eth.gasPrice(), //'0x9184e72a000', // 10000000000000
+            // value: '', // 2441406250 web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+            data: encoded_data
+        }
         try {
-            const res = await this.PayBackContract.methods.calcFutureEpoch(_hours, _days, _weeks).call();
-            return Number(res);
-        } catch (err: any) {
-            console.error("Couldn't get future epoch value for h:", _hours, " d:", _days, " w:", _weeks);
+            const tx_signed = await this.web3.eth.accounts.signTransaction(tx, process.env.PRIVATE_KEY_PayBack);
+            console.log(tx_signed);
+            const tx_sent = await this.web3.eth.sendSignedTransaction(tx_signed.rawTransaction);
+            return tx_sent;
+        } catch (err) {
+            console.error("Couldn't sign transaction.", err);
             return err;
         }
     }
+
+    public async transferFrom(_from: string, _to: string, _amount: number): Promise<any> {
+
+        const encoded_data = this.PayBackContract.methods.transferFrom(_from, _to, _amount).encodeABI();
+
+        var tx = {
+            from: process.env.PUBLIC_KEY_PayBack,
+            to: process.env.CONTRACT_ADDRESS,
+            gas: this.web3.utils.toHex(545200), // 30400
+            gasPrice: await this.web3.eth.getGasPrice(),//this.web3.eth.gasPrice(), //'0x9184e72a000', // 10000000000000
+            // value: '', // 2441406250 web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+            data: encoded_data
+        }
+        try {
+            const tx_signed = await this.web3.eth.accounts.signTransaction(tx, process.env.PRIVATE_KEY_PayBack);
+            console.log(tx_signed);
+            const tx_sent = await this.web3.eth.sendSignedTransaction(tx_signed.rawTransaction);
+            return tx_sent;
+        } catch (err) {
+            console.error("Couldn't sign transaction.", err);
+            return err;
+        }
+    }
+
+    public async lock(_receiver: string, _amount: number, _unlockEpochDate: number): Promise<any> {
+
+        const encoded_data = this.PayBackContract.methods.lock(_receiver, _amount, _unlockEpochDate).encodeABI();
+
+        var tx = {
+            from: process.env.PUBLIC_KEY_PayBack,
+            to: process.env.CONTRACT_ADDRESS,
+            gas: this.web3.utils.toHex(545200), // 30400
+            gasPrice: await this.web3.eth.getGasPrice(),//this.web3.eth.gasPrice(), //'0x9184e72a000', // 10000000000000
+            // value: '', // 2441406250 web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+            data: encoded_data
+        }
+        try {
+            const tx_signed = await this.web3.eth.accounts.signTransaction(tx, process.env.PRIVATE_KEY_PayBack);
+            console.log(tx_signed);
+            const tx_sent = await this.web3.eth.sendSignedTransaction(tx_signed.rawTransaction);
+            return tx_sent;
+        } catch (err) {
+            console.error("Couldn't sign transaction.", err);
+            return err;
+        }
+    }
+
+
 }
