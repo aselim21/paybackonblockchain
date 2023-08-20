@@ -42,11 +42,36 @@ export default class PBT_Admin {
         }
     }
 
+    public async deletePartner(_id: number): Promise<any> {
+        const encoded_data = this.PayBackContract.methods.removePartner(_id).encodeABI();
+        var tx = {
+            from: process.env.PUBLIC_KEY_PayBack,
+            to: process.env.CONTRACT_ADDRESS,
+            gas: this.web3.utils.toHex(545200), // 30400
+            gasPrice: await this.web3.eth.getGasPrice(),//this.web3.eth.gasPrice(), //'0x9184e72a000', // 10000000000000
+            // value: '', // 2441406250 web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+            data: encoded_data
+        }
+        try {
+            const tx_signed = await this.web3.eth.accounts.signTransaction(tx, process.env.PRIVATE_KEY_PayBack);
+            console.log(tx_signed);
+            const tx_sent = await this.web3.eth.sendSignedTransaction(tx_signed.rawTransaction);
+            return tx_sent;
+        } catch (err: any) {
+            console.error("Couldn't delete partner with id:", _id);
+            return err;
+        }
+    }
+
     public async getPartnerId(_addr: string): Promise<number> {
-        const res_bigInt = await this.PayBackContract.methods.addrToPartnerId(_addr).call();
-        const res_number = Number(res_bigInt);
-        console.log(res_number)
-        return res_number;
+        try {
+            const res_bigInt = await this.PayBackContract.methods.addrToPartnerId(_addr).call();
+            const res_number = Number(res_bigInt);
+            return res_number;
+        } catch (err: any) {
+            console.error("Couldn't get partner id of addr:", _addr);
+            return err;
+        }
     }
 
     public async getContractInfo(): Promise<any> {
@@ -165,7 +190,7 @@ export default class PBT_Admin {
         }
     }
 
-    public async getFutureEpoch(_hours: number, _days:number, _weeks:number ): Promise<any> {
+    public async getFutureEpoch(_hours: number, _days: number, _weeks: number): Promise<any> {
         try {
             const res = await this.PayBackContract.methods.calcFutureEpoch(_hours, _days, _weeks).call();
             return Number(res);

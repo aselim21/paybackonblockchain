@@ -104,9 +104,11 @@ contract PayBackPartnership is Owner {
         return tokens;
     }
 
-    function removePartner(uint256 id) isOwner public {
-        //gto remove the partner, the  partner should first transfer his tokens to the owner and then the owner can delete the entry.
-        delete partners[id];
+    function removePartner(uint256 _id) isOwner public {
+        //to remove the partner, the  partner should first transfer his tokens to the owner and then the owner can delete the entry.
+        Partner storage p = partners[_id];
+        addrToPartnerId[p.walletAddr] = 0;
+        delete partners[_id];
     }
 
     // function sendTokensToPartner(uint256 _partnerId) private {
