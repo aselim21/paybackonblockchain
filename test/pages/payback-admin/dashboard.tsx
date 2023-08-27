@@ -30,7 +30,7 @@ import {
 import { LoadingButton } from '@mui/lab';
 import Navbar from './components/navbar';
 import PBT_Admin from './scripts/PBT_admin';
-import Partner from './scripts/data_structures';
+// import Partner from './scripts/data_structures';
 import SyncIcon from '@mui/icons-material/Sync';
 
 
@@ -45,16 +45,16 @@ export default function AddPartnerForm() {
     const [owner, setOwner] = React.useState<string>("");
     const [currentTime, setCurrentTime] = React.useState<string>("");
 
-    const [nrPartners, setNrPartners] = React.useState<number>(0);
+    // const [nrPartners, setNrPartners] = React.useState<number>(0);
     const [nrClients, setNrClients] = React.useState<number>(0);
 
-    const [rows, setRows] = React.useState<Partner[]>([]);
+    // const [rows, setRows] = React.useState<Partner[]>([]);
 
     const [clientAddr, setClientAddr] = React.useState<string>("");
     const [isClientResult, setIsClientResult] = React.useState<string>("");
 
-    const [partnerAddr, setPartnerAddr] = React.useState<string>("");
-    const [isPartnerResult, setIsPartnerResult] = React.useState<string>("");
+    // const [partnerAddr, setPartnerAddr] = React.useState<string>("");
+    // const [isPartnerResult, setIsPartnerResult] = React.useState<string>("");
 
     const [checkBalanceAddr, setCheckBalanceAddr] = React.useState<string>("");
     const [balanceOfRes, setBalanceOfRes] = React.useState<number>();
@@ -77,16 +77,16 @@ export default function AddPartnerForm() {
         const d = new Date(res * 1000);
         const d_ger = d.toLocaleString('de', { timeZone: 'Europe/Berlin', timeZoneName: 'long' });
         console.log("Epoch:", res, "\nDate: ", d_ger);
-        setCurrentTime("Epoch (GMT): " + res + ". " + "Local date: " + d_ger );
+        setCurrentTime("Epoch (GMT): " + res + ". " + "Local date: " + d_ger);
         return d_ger;
     }
 
-    async function updateNumberOfPartners() {
-        const res = await admin.getNumPartners();
-        console.log("Number of partners:", res);
-        setNrPartners(res);
-        return res;
-    }
+    // async function updateNumberOfPartners() {
+    //     const res = await admin.getNumPartners();
+    //     console.log("Number of partners:", res);
+    //     setNrPartners(res);
+    //     return res;
+    // }
 
     async function updateNumberOfClients() {
         const res = await admin.getNumClients();
@@ -103,13 +103,13 @@ export default function AddPartnerForm() {
         return res;
     }
 
-    async function checkPartnerID(_addr: string) {
-        if (!!!_addr) return;
-        const res = await admin.getPartnerID(_addr);
-        console.log("Partner ID:", res);
-        res == 0 ? setIsPartnerResult("not a partner") : setIsPartnerResult(res.toString());
-        return res;
-    }
+    // async function checkPartnerID(_addr: string) {
+    //     if (!!!_addr) return;
+    //     const res = await admin.getPartnerID(_addr);
+    //     console.log("Partner ID:", res);
+    //     res == 0 ? setIsPartnerResult("not a partner") : setIsPartnerResult(res.toString());
+    //     return res;
+    // }
 
     async function checkBalanceOf(_addr: string) {
         if (!!!_addr) return;
@@ -137,7 +137,7 @@ export default function AddPartnerForm() {
 
     async function checkFutureEpoch(_hours: number, _days: number, _weeks: number) {
         const now = Date.now(); // Unix timestamp in milliseconds
-        console.log( "Now epoch date in GMT:", now );
+        console.log("Now epoch date in GMT:", now);
         const d = new Date(now * 1000);
         console.log("Now date in GMT", d)
         const timeToAdd = (3600 * _hours) + (86400 * _days) + (604800 * _weeks);
@@ -161,13 +161,13 @@ export default function AddPartnerForm() {
 
         updateCurrentTimeAsDateFromBlockchain();
 
-        updateNumberOfPartners();
+        // updateNumberOfPartners();
         updateNumberOfClients();
 
-        admin.getAllPartners().then(res => {
-            console.log(res);
-            setRows(res);
-        })
+        // admin.getAllPartners().then(res => {
+        //     console.log(res);
+        //     setRows(res);
+        // })
     }, []);
 
     return (
@@ -187,11 +187,11 @@ export default function AddPartnerForm() {
                 autoComplete="off"
             >
                 <Typography variant="h6" gutterBottom>
-                    {contractInfo.name} (total: {contractInfo.totalSupply} {contractInfo.symbol})
+                    <strong>{contractInfo.name}</strong> (total: <strong>{contractInfo.totalSupply} {contractInfo.symbol}</strong>)
                 </Typography>
 
                 <Typography variant="body1" gutterBottom>
-                    owner: {owner}
+                    owner: <strong>{owner}</strong>
                 </Typography>
                 <Box
                     sx={{
@@ -201,7 +201,7 @@ export default function AddPartnerForm() {
                         alignContent: 'center'
                     }}>
                     <Typography variant="body1" gutterBottom sx={{ mr: 1 }}>
-                        current time in blockchain: {currentTime}
+                        current time in blockchain: <strong>{currentTime}</strong>
                     </Typography>
                     <SyncIcon
                         sx={{
@@ -216,7 +216,7 @@ export default function AddPartnerForm() {
                     justifyContent: 'space-evenly',
                     m: 1,
                 }}>
-                <Box
+                {/* <Box
                     sx={{
                         width: 13 / 20,
                         bgcolor: 'background.paper',
@@ -232,7 +232,7 @@ export default function AddPartnerForm() {
                             alignContent: 'center'
                         }}>
                         <Typography variant="body1" gutterBottom sx={{ mx: 1 }}>
-                            Number of partners: {nrPartners}
+                            Number of partners: <strong>{nrPartners}</strong>
                         </Typography>
                         <SyncIcon
                             sx={{
@@ -241,7 +241,7 @@ export default function AddPartnerForm() {
                             onClick={event => updateNumberOfPartners()} />
                     </Box>
                     <Box id="partner-checker" sx={{ m: 1 }}>
-                        <Typography>Get partner ID: {isPartnerResult}</Typography>
+                        <Typography>Get partner ID: <strong>{isPartnerResult}</strong></Typography>
                         <Box sx={{
                             display: 'flex',
                             flexDirection: 'row',
@@ -282,12 +282,23 @@ export default function AddPartnerForm() {
                             </TableBody>
                         </Table>
                     </TableContainer>
-                </Box>
-                <Box
+                </Box> */}
+                {/* <Box
                     sx={{
-                        width: 6 / 20,
+                        width: 8 / 20,
                         borderRadius: 2,
                         bgcolor: 'background.paper',
+                    }}> */}
+                <Box
+                    sx={{
+                        maxWidth: 10 / 20,
+                        bgcolor: 'background.paper',
+                        borderRadius: 2,
+                        p: 5,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'left',
+                        my: 1
                     }}>
                     <Box
                         id="nr-clients-checker"
@@ -297,17 +308,18 @@ export default function AddPartnerForm() {
                             alignItems: 'strech',
                             alignContent: 'center'
                         }}>
-                        <Typography variant="body1" gutterBottom sx={{ mx: 1 }}>
-                            Number of clients: {nrClients}
+                        <Typography variant="body1" gutterBottom >
+                            Number of clients: <strong>{nrClients}</strong>
                         </Typography>
                         <SyncIcon
                             sx={{
-                                cursor: 'pointer'
+                                cursor: 'pointer',
+                                mx:1
                             }}
                             onClick={event => updateNumberOfClients()} />
                     </Box>
-                    <Box id="client-checker" sx={{ m: 1 }}>
-                        <Typography>Get client ID: {isClientResult} </Typography>
+                    <Box id="client-checker" sx={{ my: 1 }}>
+                        <Typography>Get client ID: <strong>{isClientResult}</strong> </Typography>
                         <Box sx={{
                             display: 'flex',
                             flexDirection: 'row',
@@ -316,12 +328,12 @@ export default function AddPartnerForm() {
                             my: 1,
                         }}>
                             <TextField label="Address" variant="outlined" value={clientAddr} size="small" onChange={(ev) => { setClientAddr(ev.target.value) }} />
-                            <Button size="small" variant="contained" onClick={() => checkClientID(clientAddr)}>Go</Button>
+                            <Button size="small" variant="contained" sx={{ mx:1 }} onClick={() => checkClientID(clientAddr)}>Go</Button>
                         </Box>
                     </Box>
                     <Box id="balance-checker"
-                        sx={{ m: 1 }}>
-                        <Typography>Balance is: {balanceOfRes} </Typography>
+                        sx={{ my: 1 }}>
+                        <Typography>Balance is: <strong>{balanceOfRes}</strong> </Typography>
                         <Box sx={{
                             display: 'flex',
                             flexDirection: 'row',
@@ -330,12 +342,12 @@ export default function AddPartnerForm() {
                             my: 1,
                         }}>
                             <TextField label="Address" variant="outlined" value={checkBalanceAddr} size="small" onChange={(ev) => { setCheckBalanceAddr(ev.target.value) }} />
-                            <Button size="small" variant="contained" onClick={() => checkBalanceOf(checkBalanceAddr)}>Go</Button>
+                            <Button size="small" variant="contained" sx={{ mx:1 }} onClick={() => checkBalanceOf(checkBalanceAddr)}>Go</Button>
                         </Box>
                     </Box>
                     <Box id="allowance-checker"
-                        sx={{ m: 1 }}>
-                        <Typography>Allowance is: {allowanceRes} </Typography>
+                        sx={{ my: 1 }}>
+                        <Typography>Allowance is: <strong>{allowanceRes}</strong> </Typography>
                         <Box sx={{
                             display: 'flex',
                             flexDirection: 'row',
@@ -343,14 +355,14 @@ export default function AddPartnerForm() {
                             alignContent: 'center',
                             my: 1,
                         }}>
-                            <TextField label="Owner address" variant="outlined" value={allowanceOwnerAddr} size="small" onChange={(ev) => { setAllowanceOwnerAddr(ev.target.value) }} />
+                            <TextField label="Owner address" variant="outlined" sx={{ mr:1 }} value={allowanceOwnerAddr} size="small" onChange={(ev) => { setAllowanceOwnerAddr(ev.target.value) }} />
                             <TextField label="Spender address" variant="outlined" value={allowanceSpenderAddr} size="small" onChange={(ev) => { setAllowanceSpenderAddr(ev.target.value) }} />
-                            <Button size="small" variant="contained" onClick={() => checkAllowance(allowanceOwnerAddr, allowanceSpenderAddr)}>Go</Button>
+                            <Button size="small" variant="contained" sx={{ mx:1 }} onClick={() => checkAllowance(allowanceOwnerAddr, allowanceSpenderAddr)}>Go</Button>
                         </Box>
                     </Box>
                     <Box id="pointsToEarn-checker"
-                        sx={{ m: 1 }}>
-                        <Typography>Points to earn are: {pointsToEarnRes} </Typography>
+                        sx={{ my: 1 }}>
+                        <Typography>Points to earn are: <strong>{pointsToEarnRes}</strong></Typography>
                         <Box sx={{
                             display: 'flex',
                             flexDirection: 'row',
@@ -358,14 +370,14 @@ export default function AddPartnerForm() {
                             alignContent: 'center',
                             my: 1,
                         }}>
-                            <TextField label="Round value" variant="outlined" value={pointsValue} size="small" onChange={(ev) => { setPointsValue(Number(ev.target.value)) }} />
+                            <TextField label="Round value" variant="outlined" sx={{ mr:1 }} value={pointsValue} size="small" onChange={(ev) => { setPointsValue(Number(ev.target.value)) }} />
                             <TextField label="Partner ID" variant="outlined" value={pointsPartnerId} size="small" onChange={(ev) => { setPointsPartnerId(Number(ev.target.value)) }} />
-                            <Button size="small" variant="contained" onClick={() => checkPointsToEarn(pointsValue!, pointsPartnerId!)}>Go</Button>
+                            <Button size="small" variant="contained" sx={{ mx:1 }} onClick={() => checkPointsToEarn(pointsValue!, pointsPartnerId!)}>Go</Button>
                         </Box>
                     </Box>
                     <Box id="futureEpoch-checker"
-                        sx={{ m: 1 }}>
-                        <Typography>Future epoch value from now (in GMT) is: {futureEpochRes} </Typography>
+                        sx={{ my: 1 }}>
+                        <Typography>Future epoch value from now (in GMT) is: <strong>{futureEpochRes}</strong> </Typography>
                         <Box sx={{
                             display: 'flex',
                             flexDirection: 'row',
@@ -373,11 +385,11 @@ export default function AddPartnerForm() {
                             alignContent: 'center',
                             my: 1,
                         }}>
-                            <TextField label="Hours" variant="outlined" value={epochHours} size="small" onChange={(ev) => { setEpochHours(Number(ev.target.value)) }} />
-                            <TextField label="Days" variant="outlined" value={epochDays} size="small" onChange={(ev) => { setEpochDays(Number(ev.target.value)) }} />
+                            <TextField label="Hours" variant="outlined" sx={{ mr:1 }} value={epochHours} size="small" onChange={(ev) => { setEpochHours(Number(ev.target.value)) }} />
+                            <TextField label="Days" variant="outlined" sx={{ mr:1 }} value={epochDays} size="small" onChange={(ev) => { setEpochDays(Number(ev.target.value)) }} />
                             <TextField label="Weeks" variant="outlined" value={epochWeeks} size="small" onChange={(ev) => { setEpochWeeks(Number(ev.target.value)) }} />
 
-                            <Button size="small" variant="contained" onClick={() => checkFutureEpoch(epochHours!, epochDays!, epochWeeks!)}>Go</Button>
+                            <Button size="small" variant="contained" sx={{ mx:1 }} onClick={() => checkFutureEpoch(epochHours!, epochDays!, epochWeeks!)}>Go</Button>
                         </Box>
                     </Box>
                 </Box>
