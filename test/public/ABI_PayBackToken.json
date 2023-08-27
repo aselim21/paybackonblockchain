@@ -293,35 +293,6 @@
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "_hours",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_days",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_weeks",
-				"type": "uint256"
-			}
-		],
-		"name": "calcFutureEpoch",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
 				"name": "_roundValue",
 				"type": "uint256"
 			},
@@ -358,6 +329,64 @@
 	{
 		"inputs": [],
 		"name": "getCurrentTime",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_locker",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_receiver",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_id",
+				"type": "uint256"
+			}
+		],
+		"name": "getLockedItem",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_locker",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_receiver",
+				"type": "address"
+			}
+		],
+		"name": "getNrLockedItems",
 		"outputs": [
 			{
 				"internalType": "uint256",

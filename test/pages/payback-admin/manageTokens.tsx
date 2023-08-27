@@ -174,48 +174,48 @@ export default function ManageTokens() {
         }
     };
 
-    const handleLock = async (event: React.FormEvent<HTMLFormElement>) => {
-        setLockLoading(true);
-        event.preventDefault();
-        const data = new FormData(event.currentTarget);
-        const req_data = {
-            receiver: data.get("lock_receiver")?.toString(),
-            amount: Number(data.get("lock_amount")),
-            unlockDate: Number(data.get("lock_date")),
-        }
-        console.log(req_data)
-        if (!!!req_data.receiver || !!!req_data.amount || !!!req_data.unlockDate) {
-            setMessage(["Fehler beim Lock!", `Alle Felder sind verpflichend! Bitte überprüfe die Daten und versuche noch einmal.`])
-            setResultIs(false);
-            setLockLoading(false);
-            return;
-        }
+    // const handleLock = async (event: React.FormEvent<HTMLFormElement>) => {
+    //     setLockLoading(true);
+    //     event.preventDefault();
+    //     const data = new FormData(event.currentTarget);
+    //     const req_data = {
+    //         receiver: data.get("lock_receiver")?.toString(),
+    //         amount: Number(data.get("lock_amount")),
+    //         unlockDate: Number(data.get("lock_date")),
+    //     }
+    //     console.log(req_data)
+    //     if (!!!req_data.receiver || !!!req_data.amount || !!!req_data.unlockDate) {
+    //         setMessage(["Fehler beim Lock!", `Alle Felder sind verpflichend! Bitte überprüfe die Daten und versuche noch einmal.`])
+    //         setResultIs(false);
+    //         setLockLoading(false);
+    //         return;
+    //     }
 
-        try {
-            const res = await admin.lock(req_data.receiver, req_data.amount, req_data.unlockDate);
+    //     try {
+    //         const res = await admin.lock(req_data.receiver, req_data.amount, req_data.unlockDate);
 
-            if (!!res.transactionHash) {
-                setMessage(["Erfolg", `${req_data.amount} PBT wurden erfolgreich für ${req_data.receiver} bis ${req_data.unlockDate} gelockt.`])
-                setResultIs(true);
-                setLockLoading(false);
-                return;
+    //         if (!!res.transactionHash) {
+    //             setMessage(["Erfolg", `${req_data.amount} PBT wurden erfolgreich für ${req_data.receiver} bis ${req_data.unlockDate} gelockt.`])
+    //             setResultIs(true);
+    //             setLockLoading(false);
+    //             return;
 
-            } else {
-                setMessage(["Fehler beim Lock!", `${req_data.amount} PBT konnten für ${req_data.receiver} bis ${req_data.unlockDate} nicht gelockt werden. Bitte überprüfe die Daten und versuche noch einmal.`]);
-                setResultIs(false);
-                setLockLoading(false);
-                return;
+    //         } else {
+    //             setMessage(["Fehler beim Lock!", `${req_data.amount} PBT konnten für ${req_data.receiver} bis ${req_data.unlockDate} nicht gelockt werden. Bitte überprüfe die Daten und versuche noch einmal.`]);
+    //             setResultIs(false);
+    //             setLockLoading(false);
+    //             return;
 
-            }
+    //         }
 
-        } catch (err: any) {
-            console.error(err)
-            setMessage(["Fehler beim Lock!", `${req_data.amount} PBT konnten für ${req_data.receiver} bis ${req_data.unlockDate} nicht gelockt werden.` + err.toString()]);
-            setResultIs(false);
-            setLockLoading(false);
-            return;
-        }
-    };
+    //     } catch (err: any) {
+    //         console.error(err)
+    //         setMessage(["Fehler beim Lock!", `${req_data.amount} PBT konnten für ${req_data.receiver} bis ${req_data.unlockDate} nicht gelockt werden.` + err.toString()]);
+    //         setResultIs(false);
+    //         setLockLoading(false);
+    //         return;
+    //     }
+    // };
     React.useEffect((): void => {
         //Runs only on the first render
         updateOwnerBalance();
@@ -440,7 +440,7 @@ export default function ManageTokens() {
                         </LoadingButton>
                     </Box>
                 </Box>
-                <Box
+                {/* <Box
                     id="lock"
                     sx={{
                         maxWidth: 5 / 20,
@@ -524,7 +524,7 @@ export default function ManageTokens() {
                             Lock
                         </LoadingButton>
                     </Box>
-                </Box>
+                </Box> */}
 
             </Box>
 

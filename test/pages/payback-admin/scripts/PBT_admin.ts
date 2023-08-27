@@ -6,7 +6,8 @@ import Partner from './data_structures';
 
 export default class PBT_Admin {
     private web3: any;
-    private PayBackContract: any;
+    public PayBackContract: any;
+    public TransferEvent = new Event("TransferEvent");
 
     public constructor() {
         this.web3 = new Web3(new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_URL!));
@@ -278,5 +279,67 @@ export default class PBT_Admin {
         }
     }
 
+    public async releaseLock(_locker: string, _receiver: string, _id: number): Promise<any> {
+        const encoded_data = this.PayBackContract.methods.releaseLock(_locker, _receiver, _id).encodeABI();
 
+        var tx = {
+            from: process.env.PUBLIC_KEY_PayBack,
+            to: process.env.CONTRACT_ADDRESS,
+            gas: this.web3.utils.toHex(545200), // 30400
+            gasPrice: await this.web3.eth.getGasPrice(),//this.web3.eth.gasPrice(), //'0x9184e72a000', // 10000000000000
+            // value: '', // 2441406250 web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+            data: encoded_data
+        }
+        try {
+            const tx_signed = await this.web3.eth.accounts.signTransaction(tx, process.env.PRIVATE_KEY_PayBack);
+            console.log(tx_signed);
+            const tx_sent = await this.web3.eth.sendSignedTransaction(tx_signed.rawTransaction);
+            return tx_sent;
+        } catch (err) {
+            console.error("Couldn't sign transaction.", err);
+            return err;
+        }
+    }
+    public async reduceItemTokens(_receiver: string, _id: number, _amount: number): Promise<any> {
+        const encoded_data = this.PayBackContract.methods.reduceItemTokens(_receiver, _id, _amount).encodeABI();
+
+        var tx = {
+            from: process.env.PUBLIC_KEY_PayBack,
+            to: process.env.CONTRACT_ADDRESS,
+            gas: this.web3.utils.toHex(545200), // 30400
+            gasPrice: await this.web3.eth.getGasPrice(),//this.web3.eth.gasPrice(), //'0x9184e72a000', // 10000000000000
+            // value: '', // 2441406250 web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+            data: encoded_data
+        }
+        try {
+            const tx_signed = await this.web3.eth.accounts.signTransaction(tx, process.env.PRIVATE_KEY_PayBack);
+            console.log(tx_signed);
+            const tx_sent = await this.web3.eth.sendSignedTransaction(tx_signed.rawTransaction);
+            return tx_sent;
+        } catch (err) {
+            console.error("Couldn't sign transaction.", err);
+            return err;
+        }
+    }
+
+    public async getNumberOfLockedItems(_locker: string, _receiver: string): Promise<any> {
+        try {
+            const res = await this.PayBackContract.methods.getNrLockedItems(_locker, _receiver).call();
+            return Number(res);
+        } catch (err: any) {
+            console.error("Couldn't get number of locked items for locker:", _locker, " and receiver: ", _receiver);
+            return err;
+        }
+    }
+
+    public async getLockedItem(_locker: string, _receiver: string, _id: number): Promise<{amount:number, releaseDate:number}> {
+        try {
+            console.log("calling")
+            const res = await this.PayBackContract.methods.getLockedItem(_locker, _receiver, _id).call();
+            return {amount: Number(res[0]), releaseDate: Number(res[1])};
+        } catch (err: any) {
+            console.error("Couldn't get the locked item with id:", _id, " for locker:", _locker, " and receiver: ", _receiver);
+            return err;
+        }
+    }
 }

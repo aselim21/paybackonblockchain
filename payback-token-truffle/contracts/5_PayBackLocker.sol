@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.12;
+pragma solidity ^0.8.19;
 import "./4_PayBackToken.sol";
 
 contract PayBackLocker is PayBackToken("PayBackToken", "PBT", 1000000, 0, 300) {
@@ -7,7 +7,8 @@ contract PayBackLocker is PayBackToken("PayBackToken", "PBT", 1000000, 0, 300) {
         uint256 amount;
         uint256 unlockDate;
     }
-    mapping(address => mapping(address => Item[])) lockerToReceiverToItem;
+    mapping(address => mapping(address => Item[]))
+        private lockerToReceiverToItem;
     address private _contractAddr = address(this);
 
     //-------------------------Events-------------------------
@@ -29,11 +30,26 @@ contract PayBackLocker is PayBackToken("PayBackToken", "PBT", 1000000, 0, 300) {
             addrToPartnerId[msg.sender] != 0 || msg.sender == _owner,
             "Locker: Only partners or owner can lock."
         );
+
+        // case 1. sender is owner
+        if (msg.sender == _owner) {
+            require(
+                addrToPartnerId[_receiver] != 0,
+                "ERC20: Owner can only lock transactions to partners."
+            );
+        }
+         //case 2. sender is partner
+        else if (addrToPartnerId[msg.sender] != 0) {
+            require(
+                addrToClientId[_receiver] != 0 || _receiver == _owner,
+                "ERC20: Partners can only lock transactions to clients and owner."
+            );
+        }
         _transfer(msg.sender, _contractAddr, _amount);
 
         Item memory newItem = Item(_amount, _unlockDate);
         lockerToReceiverToItem[msg.sender][_receiver].push(newItem);
-        uint256 id = lockerToReceiverToItem[msg.sender][_receiver].length;
+        uint256 id = lockerToReceiverToItem[msg.sender][_receiver].length-1;
 
         emit Locked(msg.sender, _receiver, id);
 
@@ -73,10 +89,10 @@ contract PayBackLocker is PayBackToken("PayBackToken", "PBT", 1000000, 0, 300) {
             _id
         ];
 
-        require(the_item.amount < _amount, "Locker: Amount is too high.");
+        require(the_item.amount > _amount, "Locker: Amount is too high.");
 
         require(
-            the_item.unlockDate < block.timestamp,
+            the_item.unlockDate > block.timestamp,
             "Locker: Option reducing tokens is expired."
         );
         lockerToReceiverToItem[msg.sender][_receiver][_id].amount =
@@ -92,14 +108,32 @@ contract PayBackLocker is PayBackToken("PayBackToken", "PBT", 1000000, 0, 300) {
         return block.timestamp;
     }
 
-    function calcFutureEpoch(
-        uint256 _hours,
-        uint256 _days,
-        uint256 _weeks
-    ) public view returns (uint256) {
-        uint256 givenEpoch = (3600 * _hours) +
-            (86400 * _days) +
-            (604800 * _weeks);
-        return block.timestamp + givenEpoch;
+    function getNrLockedItems(address _locker, address _receiver)
+        public
+        view
+        returns (uint256)
+    {
+        return lockerToReceiverToItem[_locker][_receiver].length;
     }
+
+    function getLockedItem(
+        address _locker,
+        address _receiver,
+        uint256 _id
+    ) public view returns (uint256, uint256) {
+        Item memory the_item = lockerToReceiverToItem[_locker][_receiver][_id];
+        return (the_item.amount, the_item.unlockDate);
+    }
+
+    //dont need because not accurate like this
+    //     function calcFutureEpoch(
+    //         uint256 _hours,
+    //         uint256 _days,
+    //         uint256 _weeks
+    //     ) public view returns (uint256) {
+    //         uint256 givenEpoch = (3600 * _hours) +
+    //             (86400 * _days) +
+    //             (604800 * _weeks);
+    //         return block.timestamp + givenEpoch;
+    //     }
 }

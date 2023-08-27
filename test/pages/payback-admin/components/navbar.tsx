@@ -20,7 +20,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useRouter } from 'next/router';
 const home = "/payback-admin"
 
-const pages = [{name: 'Dashboard', link:`${home}/dashboard`}, {name: 'Partner verwalten', link:`${home}/managePartners`},{name: 'Tokens verwalten', link:`${home}/manageTokens`}, {name: 'Anfragen', link:`${home}`}];
+const pages = [{name: 'Dashboard', link:`${home}/dashboard`}, {name: 'Partner verwalten', link:`${home}/managePartners`},{name: 'Tokens verwalten', link:`${home}/manageTokens`},{name: 'Locks verwalten', link:`${home}/manageLocks`}, {name: 'Anfragen', link:`${home}`}];
 const settings = ['Einstellungen', 'Logout'];
 
 const ThemePayback = createTheme({
