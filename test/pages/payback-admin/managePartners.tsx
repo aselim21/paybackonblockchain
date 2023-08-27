@@ -19,16 +19,53 @@ import {
     DialogContent,
     DialogContentText,
     DialogTitle,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
 
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import Navbar from './components/navbar';
 import PBT_Admin from './scripts/PBT_admin';
+import Partner from './scripts/data_structures';
+import SyncIcon from '@mui/icons-material/Sync';
+
 
 export default function ManagePartners() {
+    const admin = new PBT_Admin();
+
     const [message, setMessage] = React.useState<string[]>(["", ""]);
     const [resultIs, setResultIs] = React.useState<boolean | null>(null);
     const [loading, setLoading] = React.useState(false);
+
+    const [nrPartners, setNrPartners] = React.useState<number>(0);
+    const [rows, setRows] = React.useState<Partner[]>([]);
+    const [partnerAddr, setPartnerAddr] = React.useState<string>("");
+    const [isPartnerResult, setIsPartnerResult] = React.useState<string>("");
+
+    const [rows_PartnerAdded, setRows_PartnerAdded] = React.useState<Partner[]>([]);
+    let rowNr_PartnerAdded = 0;
+    let allEvents_PartnerAdded: any[] = [];
+
+    async function updateNumberOfPartners() {
+        const res = await admin.getNumPartners();
+        console.log("Number of partners:", res);
+        setNrPartners(res);
+        return res;
+    }
+
+    async function checkPartnerID(_addr: string) {
+        if (!!!_addr) return;
+        const res = await admin.getPartnerID(_addr);
+        console.log("Partner ID:", res);
+        res == 0 ? setIsPartnerResult("not a partner") : setIsPartnerResult(res.toString());
+        return res;
+    }
+
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         setLoading(true);
@@ -46,7 +83,7 @@ export default function ManagePartners() {
             setLoading(false);
             return;
         }
-        const admin = new PBT_Admin();
+
         try {
             const res = await admin.addPartner(req_data.name!, req_data.addr!, req_data.curr!, req_data.valueForToken!);
 
@@ -110,6 +147,49 @@ export default function ManagePartners() {
         }
     };
 
+    async function loadEvent(_eventName: string) {
+        console.log("Accessing event")
+        try {
+            const eventHandler = admin.PayBackContract.events[_eventName]({
+                fromBlock: 0, // The block number from which to start listening (optional)
+                toBlock: 'latest', // The block number at which to stop listening (optional)
+            });
+            if (_eventName == "PartnerAdded") {
+                eventHandler.on('data', (eventData: any) => {
+                    // Handle the event data here
+                    console.log(eventData)
+                    allEvents_PartnerAdded.push({
+                        nr: ++rowNr_PartnerAdded,
+                        partnerId: Number(eventData.returnValues.partnerId),
+                        name: eventData.returnValues.name,
+                    })
+                    setRows_PartnerAdded(allEvents_PartnerAdded)
+                });
+
+            }
+            eventHandler.on('error', (error: any) => {
+                // Handle errors here
+                console.error('Error:', error);
+            });
+        } catch (err: any) {
+            console.error("Couldn't subscribe", err);
+            return err;
+        }
+    }
+
+    React.useEffect((): void => {
+        //Runs only on the first render
+        updateNumberOfPartners();
+
+
+        admin.getAllPartners().then(res => {
+            console.log(res);
+            setRows(res);
+        });
+        loadEvent("PartnerAdded")
+    }, []);
+
+
 
     return (
         <>
@@ -135,6 +215,7 @@ export default function ManagePartners() {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
+                        mb: 2
                     }}>
                     <Typography component="h1" variant="h5">
                         Einen neuen Partner anmelden
@@ -203,14 +284,15 @@ export default function ManagePartners() {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
+                        mb: 2
                     }}>
                     <Typography component="h1" variant="h5">
                         Partner entfernen
                     </Typography>
                     <Typography variant="body1">
-                        First make sure that the partner doesn't own any tokens. Else these tokens will be lost.
+                        ! First make sure that the partner doesn't own any tokens. Else these tokens will be lost !
                     </Typography>
-                    <Box component="form" onSubmit={handleDeletePartner} sx={{ mt: 3 }}>
+                    <Box component="form" onSubmit={handleDeletePartner} sx={{ mt: 3, width: 1 }}>
 
                         <TextField
                             required
@@ -229,6 +311,157 @@ export default function ManagePartners() {
                             Partner entfernen
                         </LoadingButton>
                     </Box>
+                </Box>
+
+                <Box
+                    id="active-partners"
+                    sx={{
+                        maxWidth: 13 / 20,
+                        bgcolor: 'background.paper',
+                        borderRadius: 2,
+                        p: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        mb: 2
+                    }}>
+                    <Typography component="h1" variant="h5">
+                        All active partners
+                    </Typography>
+
+                    <Box component="form" id="partner-checker" sx={{ width: 1, mb: 1 }}>
+
+                        <Typography variant='body1' sx={{ mb: 1 }}>
+                            Get partner ID: <strong>{isPartnerResult}</strong>
+                        </Typography>
+
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={4}>
+                                <TextField
+                                    fullWidth
+                                    required
+                                    label="Address"
+                                    variant="outlined"
+                                    value={partnerAddr}
+                                    size="small"
+                                    onChange={(ev) => { setPartnerAddr(ev.target.value) }}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                                <Button
+                                    size="small"
+                                    variant="contained"
+                                    sx={{
+                                        height: 1,
+                                    }}
+                                    onClick={() => checkPartnerID(partnerAddr)}>
+                                    Go
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Box>
+
+                    <TableContainer component={Paper} sx={{ m: 1 }}>
+                        <Box
+                            id="nr-partners-checker"
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'strech',
+                                alignContent: 'center',
+                                ml: 1,
+                                mt: 1
+
+                            }}>
+                            <SyncIcon
+                                sx={{
+                                    cursor: 'pointer',
+                                    mr: 1
+                                }}
+                                onClick={event => updateNumberOfPartners()} />
+                            <Typography variant="body1" gutterBottom>
+                                Number of partners: <strong>{nrPartners}</strong>
+                            </Typography>
+
+                        </Box>
+                        <Table sx={{ minWidth:800 }} aria-label="simple table">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>ID</TableCell>
+                                    <TableCell align="right">Name</TableCell>
+                                    <TableCell align="right">Address</TableCell>
+                                    <TableCell align="right">Currency</TableCell>
+                                    <TableCell align="right">Value for token</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {rows.map((row: Partner) => (
+                                    <TableRow
+                                        key={row.name}
+                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                    >
+                                        <TableCell component="th" scope="row">
+                                            {row.id}
+                                        </TableCell>
+                                        <TableCell align="right">{row.name}</TableCell>
+                                        <TableCell align="right">{row.address}</TableCell>
+                                        <TableCell align="right">{row.currency}</TableCell>
+                                        <TableCell align="right">{row.valueForToken}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Box>
+
+                <Box
+                    id="AddedPartners-Event"
+                    sx={{
+                        maxWidth: 7 / 20,
+                        bgcolor: 'background.paper',
+                        borderRadius: 2,
+                        p: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        mb: 2
+                    }}>
+                    <Typography component="h1" variant="h5">
+                    PartnerAdded Events
+                    </Typography>
+                    <TableContainer component={Paper} sx={{}}>
+                        <SyncIcon
+                            sx={{
+                                cursor: 'pointer',
+                                mt: 1,
+                                ml: 1
+                            }}
+                            onClick={event => (loadEvent('PartnerAdded'))} />
+                        <Table sx={{ minWidth: 400 }} aria-label="simple table">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Nr.</TableCell>
+                                    {/* <TableCell align="right">Index</TableCell> */}
+                                    <TableCell align="right">Partner ID</TableCell>
+                                    <TableCell align="right">Name</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {rows_PartnerAdded.map((row: any) => (
+                                    <TableRow
+                                        key={row.nr}
+                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                    >
+                                        <TableCell component="th" scope="row">
+                                            {row.nr}
+                                        </TableCell>
+                                        <TableCell align="right">{row.partnerId}</TableCell>
+                                        <TableCell align="right">{row.name}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 </Box>
 
             </Box>
