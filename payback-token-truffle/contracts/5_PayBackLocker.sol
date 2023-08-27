@@ -99,6 +99,8 @@ contract PayBackLocker is PayBackToken("PayBackToken", "PBT", 1000000, 0, 300) {
             the_item.amount -
             _amount;
 
+        _transfer(_contractAddr, msg.sender, _amount);
+
         //     //ich weiss nicht wa passiert wenn die Waren nicht rechtzeitig bei dem Kaufer ankommen. Gilt die Retoure oder nicht mehr...
         //     //also hier ist die Zeit fest.
         //     // Nachdem die Zeit abgelaufen ist, koennen die Tokens nur an der Kunde geschickt werden. und das macht automatisch der Owner.
