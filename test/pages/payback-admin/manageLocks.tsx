@@ -42,7 +42,7 @@ export default function ManageLocks() {
     const [reduceItemTokensLoading, setReduceItemTokensLoading] = React.useState(false);
 
     const [resNrItems, setResNrItems] = React.useState<number>(0);
-    const [resItem, setResItem] = React.useState<{releaseDate:number, amount:number}>({amount: 0, releaseDate: 0});
+    const [resItem, setResItem] = React.useState<{ releaseDate: number, amount: number }>({ amount: 0, releaseDate: 0 });
 
 
     const [epochHours, setEpochHours] = React.useState<number>(0);
@@ -50,11 +50,11 @@ export default function ManageLocks() {
     const [epochWeeks, setEpochWeeks] = React.useState<number>(0);
     const [futureEpochRes, setFutureEpochRes] = React.useState<number>(0);
 
-    const [rows_Locked, setRows_Locked] = React.useState<Partner[]>([]);
+    const [rows_Locked, setRows_Locked] = React.useState<any[]>([]);
     let rowNr_Locked = 0;
     let allEvents_Locked: any[] = [];
 
-    const [rows_Released, setRows_Released] = React.useState<Partner[]>([]);
+    const [rows_Released, setRows_Released] = React.useState<any[]>([]);
     let rowNr_Released = 0;
     let allEvents_Released: any[] = [];
 
@@ -125,7 +125,7 @@ export default function ManageLocks() {
             id: Number(data.get("release_item_id")),
         }
         console.log(req_data)
-        if (!!!req_data.locker || !!!req_data.receiver || !!!req_data.id) {
+        if (!!!req_data.locker || !!!req_data.receiver) {
             setMessage(["Fehler bei Releasing!", `Alle Felder sind verpflichend! Bitte überprüfe die Daten und versuche noch einmal.`])
             setResultIs(false);
             setReleaseLoading(false);
@@ -168,7 +168,7 @@ export default function ManageLocks() {
             amount: Number(data.get("reduceItemTokens_amount")),
         }
         console.log(req_data)
-        if (!!!req_data.receiver ) {
+        if (!!!req_data.receiver) {
             setMessage(["Fehler bei Reducing Item Tokens!", `Alle Felder sind verpflichend! Bitte überprüfe die Daten und versuche noch einmal.`])
             setResultIs(false);
             setReduceItemTokensLoading(false);
@@ -230,7 +230,7 @@ export default function ManageLocks() {
 
     };
     async function loadEvent(_eventName: string) {
-        // const eventName = 'Locked'
+        console.log("Accessing event")
         try {
             const eventHandler = admin.PayBackContract.events[_eventName]({
                 fromBlock: 0, // The block number from which to start listening (optional)
@@ -241,7 +241,7 @@ export default function ManageLocks() {
                     // Handle the event data here
                     console.log(eventData)
                     allEvents_Locked.push({
-                        index: ++rowNr_Locked,
+                        nr: ++rowNr_Locked,
                         locker: eventData.returnValues.locker,
                         receiver: eventData.returnValues.receiver,
                         id: Number(eventData.returnValues.id)
@@ -254,7 +254,7 @@ export default function ManageLocks() {
                 eventHandler.on('data', (eventData: any) => {
                     // Handle the event data here
                     allEvents_Released.push({
-                        index: ++rowNr_Released,
+                        nr: ++rowNr_Released,
                         locker: eventData.returnValues.locker,
                         receiver: eventData.returnValues.receiver,
                         id: Number(eventData.returnValues.id)
@@ -263,10 +263,6 @@ export default function ManageLocks() {
                     setRows_Released(allEvents_Released)
                 });
             }
-
-
-
-
             eventHandler.on('error', (error: any) => {
                 // Handle errors here
                 console.error('Error:', error);
@@ -299,9 +295,6 @@ export default function ManageLocks() {
                     flexWrap: 'wrap',
                     flexDirection: 'row'
                 }}>
-
-
-
                 <Box
                     id="lock"
                     sx={{
@@ -321,7 +314,7 @@ export default function ManageLocks() {
 
                     <Box component="form" onSubmit={handleLock} sx={{ mt: 3 }}>
 
-                        <Typography variant='body1' sx={{ mb: 2 }}>
+                        <Typography variant='body2' sx={{ mb: 2 }}>
                             Partners and owner can lock their tokens for a specific amount of time before sending them to their receiver.
                         </Typography>
 
@@ -411,8 +404,8 @@ export default function ManageLocks() {
 
                     <Box component="form" onSubmit={handleReduceItemTokens} sx={{ mt: 3 }}>
 
-                        <Typography variant='body1' sx={{ mb: 2 }}>
-                            The locker can reduce the Locked amount by reducing the locked about of tokens.Tokens will be autmatically transferred to the locker.
+                        <Typography variant='body2' sx={{ mb: 2 }}>
+                            The locker can change the locked amount of Tokens by reducing them. Tokens will be autmatically transferred back to the locker.
                         </Typography>
 
                         <Grid container spacing={2}>
@@ -440,7 +433,7 @@ export default function ManageLocks() {
                                     fullWidth
                                     id="reduceItemTokens_amount"
                                     name="reduceItemTokens_amount"
-                                    label="Amount"
+                                    label="with amount"
                                 />
                             </Grid>
                         </Grid>
@@ -476,7 +469,7 @@ export default function ManageLocks() {
 
                     <Box component="form" onSubmit={handleRelease} sx={{ mt: 3 }}>
 
-                        <Typography variant='body1' sx={{ mb: 2 }}>
+                        <Typography variant='body2' sx={{ mb: 2 }}>
                             Owner can and must release all tokens, that have an expired release date.
                         </Typography>
 
@@ -537,14 +530,14 @@ export default function ManageLocks() {
                     <Typography component="h1" variant="h5">
                         Locked Events
                     </Typography>
-                    <Box component="form" onSubmit={handleGetNrItems} sx={{ mt: 3 }}>
+                    <Box component="form" onSubmit={handleGetNrItems} sx={{ mt: 3, width:1 }}>
 
                         <Typography variant='body1' sx={{ mb: 2 }}>
-                            Get number of locked items: {resNrItems}
+                            Get number of locked items: <strong>{resNrItems}</strong>
                         </Typography>
 
                         <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
+                            <Grid item xs={12} sm={4}>
                                 <TextField
                                     required
                                     fullWidth
@@ -553,7 +546,7 @@ export default function ManageLocks() {
                                     label="Locker (address)"
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid item xs={12} sm={4}>
                                 <TextField
                                     required
                                     fullWidth
@@ -562,23 +555,26 @@ export default function ManageLocks() {
                                     label="Receiver (address)"
                                 />
                             </Grid>
+                            <Grid item xs={12} sm={4}>
+                                <Button
+                                    type="submit"
+                                    fullWidth
+                                    variant="contained"
+                                    sx={{ 
+                                        height: 1,
+                                    }}>
+                                    Get number
+                                </Button>
+                            </Grid>
 
                         </Grid>
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
 
-                        >
-                            Get number
-                        </Button>
                     </Box>
 
-                    <Box component="form" onSubmit={handleGetLockedItem} sx={{ mt: 3 }}>
+                    <Box component="form" onSubmit={handleGetLockedItem} sx={{ mt: 3, width:1 }}>
 
                         <Typography variant='body1' sx={{ mb: 2 }}>
-                            Get the locked item:  Amount={resItem.amount}    ReleaseDate={resItem.releaseDate} ToRelease={resItem.releaseDate<=Date.now() ? "true" : "false"  }
+                            Get the locked item:  Amount=<strong>{resItem.amount}</strong> ReleaseDate=<strong>{resItem.releaseDate}</strong> ToRelease=<strong>{resItem.releaseDate <= Date.now() ? "true" : "false"} </strong>
                         </Typography>
 
                         <Grid container spacing={2}>
@@ -621,12 +617,19 @@ export default function ManageLocks() {
                             Get item
                         </Button>
                     </Box>
+
                     <TableContainer component={Paper} sx={{}}>
-                        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                        <SyncIcon
+                            sx={{
+                                cursor: 'pointer',
+                                mt: 1,
+                                ml: 1
+                            }}
+                            onClick={event => (loadEvent('Locked'))} />
+                        <Table sx={{ minWidth: 750 }} aria-label="simple table">
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Index</TableCell>
-                                    {/* <TableCell align="right">Index</TableCell> */}
+                                    <TableCell>Nr.</TableCell>
                                     <TableCell align="right">Locker</TableCell>
                                     <TableCell align="right">Recevier</TableCell>
                                     <TableCell align="right">ID</TableCell>
@@ -635,11 +638,11 @@ export default function ManageLocks() {
                             <TableBody>
                                 {rows_Locked.map((row: any) => (
                                     <TableRow
-                                        key={row.index}
+                                        key={row.nr}
                                         sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                     >
                                         <TableCell component="th" scope="row">
-                                            {row.index}
+                                            {row.nr}
                                         </TableCell>
                                         <TableCell align="right">{row.locker}</TableCell>
                                         <TableCell align="right">{row.receiver}</TableCell>
@@ -668,11 +671,17 @@ export default function ManageLocks() {
                         Released Events
                     </Typography>
                     <TableContainer component={Paper} sx={{}}>
-                        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                        <SyncIcon
+                            sx={{
+                                cursor: 'pointer',
+                                mt: 1,
+                                ml: 1
+                            }}
+                            onClick={event => (loadEvent('Released'))} />
+                        <Table sx={{ minWidth: 750 }} aria-label="simple table">
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Index</TableCell>
-                                    {/* <TableCell align="right">Index</TableCell> */}
+                                    <TableCell>Nr.</TableCell>
                                     <TableCell align="right">Locker</TableCell>
                                     <TableCell align="right">Recevier</TableCell>
                                     <TableCell align="right">ID</TableCell>
@@ -681,11 +690,11 @@ export default function ManageLocks() {
                             <TableBody>
                                 {rows_Released.map((row: any) => (
                                     <TableRow
-                                        key={row.index}
+                                        key={row.nr}
                                         sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                     >
                                         <TableCell component="th" scope="row">
-                                            {row.index}
+                                            {row.nr}
                                         </TableCell>
                                         <TableCell align="right">{row.locker}</TableCell>
                                         <TableCell align="right">{row.receiver}</TableCell>
