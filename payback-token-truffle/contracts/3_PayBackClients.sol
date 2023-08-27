@@ -10,7 +10,7 @@ contract PayBackClients is PayBackPartnership {
     // address[] public clientAddresses;
     uint256 public numClient; //last id.. if 0, no clients
 
-    event ClientRegistered(address indexed _addr);
+    // event ClientRegistered(address indexed _addr);
 
     // event Transfer(address indexed from, address indexed to, uint256 value);
     constructor() {
@@ -45,7 +45,7 @@ contract PayBackClients is PayBackPartnership {
         ++numClient;
         addrToClientId[_addr] = numClient;
  
-        emit ClientRegistered(_addr);
+        // emit ClientRegistered(_addr);
         return numClient;
     }
 
