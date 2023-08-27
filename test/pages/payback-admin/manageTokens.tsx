@@ -19,6 +19,13 @@ import {
     DialogContent,
     DialogContentText,
     DialogTitle,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import Navbar from './components/navbar';
@@ -40,10 +47,18 @@ export default function ManageTokens() {
 
     const [transferFrom_From, setTransferFrom_From] = React.useState<string>("");
 
-    const [epochHours, setEpochHours] = React.useState<number>(0);
-    const [epochDays, setEpochDays] = React.useState<number>(0);
-    const [epochWeeks, setEpochWeeks] = React.useState<number>(0);
-    const [futureEpochRes, setFutureEpochRes] = React.useState<number>(0);
+    // const [epochHours, setEpochHours] = React.useState<number>(0);
+    // const [epochDays, setEpochDays] = React.useState<number>(0);
+    // const [epochWeeks, setEpochWeeks] = React.useState<number>(0);
+    // const [futureEpochRes, setFutureEpochRes] = React.useState<number>(0);
+
+    const [rows_Approval, setRows_Approval] = React.useState<any[]>([]);
+    let rowNr_Approval = 0;
+    let allEvents_Approval: any[] = [];
+
+    const [rows_Transfer, setRows_Transfer] = React.useState<any[]>([]);
+    let rowNr_Transfer = 0;
+    let allEvents_Transfer: any[] = [];
 
     const admin = new PBT_Admin();
 
@@ -76,17 +91,17 @@ export default function ManageTokens() {
         setCalcLeftAllowance(res);
         return res;
     }
-    async function checkFutureEpoch(_hours: number, _days: number, _weeks: number) {
-        const now = Date.now(); // Unix timestamp in milliseconds
-        console.log("Now epoch date in GMT:", now);
-        const d = new Date(now * 1000);
-        console.log("Now date in GMT", d)
-        const timeToAdd = (3600 * _hours) + (86400 * _days) + (604800 * _weeks);
-        const res = now + timeToAdd;
-        console.log("Future epoch date in GMT is:", res);
-        setFutureEpochRes(res);
-        return res;
-    }
+    // async function checkFutureEpoch(_hours: number, _days: number, _weeks: number) {
+    //     const now = Date.now(); // Unix timestamp in milliseconds
+    //     console.log("Now epoch date in GMT:", now);
+    //     const d = new Date(now * 1000);
+    //     console.log("Now date in GMT", d)
+    //     const timeToAdd = (3600 * _hours) + (86400 * _days) + (604800 * _weeks);
+    //     const res = now + timeToAdd;
+    //     console.log("Future epoch date in GMT is:", res);
+    //     setFutureEpochRes(res);
+    //     return res;
+    // }
 
     const handleTransfer = async (event: React.FormEvent<HTMLFormElement>) => {
         setTransferLoading(true);
@@ -174,51 +189,55 @@ export default function ManageTokens() {
         }
     };
 
-    // const handleLock = async (event: React.FormEvent<HTMLFormElement>) => {
-    //     setLockLoading(true);
-    //     event.preventDefault();
-    //     const data = new FormData(event.currentTarget);
-    //     const req_data = {
-    //         receiver: data.get("lock_receiver")?.toString(),
-    //         amount: Number(data.get("lock_amount")),
-    //         unlockDate: Number(data.get("lock_date")),
-    //     }
-    //     console.log(req_data)
-    //     if (!!!req_data.receiver || !!!req_data.amount || !!!req_data.unlockDate) {
-    //         setMessage(["Fehler beim Lock!", `Alle Felder sind verpflichend! Bitte überprüfe die Daten und versuche noch einmal.`])
-    //         setResultIs(false);
-    //         setLockLoading(false);
-    //         return;
-    //     }
+    async function loadEvent(_eventName: string) {
+        console.log("Accessing event")
+        try {
+            const eventHandler = admin.PayBackContract.events[_eventName]({
+                fromBlock: 0, // The block number from which to start listening (optional)
+                toBlock: 'latest', // The block number at which to stop listening (optional)
+            });
+            if (_eventName == "Transfer") {
+                eventHandler.on('data', (eventData: any) => {
+                    // Handle the event data here
+                    allEvents_Transfer.push({
+                        nr: ++rowNr_Transfer,
+                        from: eventData.returnValues.from,
+                        to: eventData.returnValues.to,
+                        value: Number(eventData.returnValues.value)
+                    })
+                    setRows_Transfer(allEvents_Transfer)
 
-    //     try {
-    //         const res = await admin.lock(req_data.receiver, req_data.amount, req_data.unlockDate);
+                });
 
-    //         if (!!res.transactionHash) {
-    //             setMessage(["Erfolg", `${req_data.amount} PBT wurden erfolgreich für ${req_data.receiver} bis ${req_data.unlockDate} gelockt.`])
-    //             setResultIs(true);
-    //             setLockLoading(false);
-    //             return;
+            } else if (_eventName == "Approval") {
+                eventHandler.on('data', (eventData: any) => {
+                    // Handle the event data here
+                    allEvents_Approval.push({
+                        nr: ++rowNr_Approval,
+                        owner: eventData.returnValues.owner,
+                        spender: eventData.returnValues.spender,
+                        value: Number(eventData.returnValues.value)
+                    })
+                    setRows_Approval(allEvents_Approval)
+                });
+            }
+            eventHandler.on('error', (error: any) => {
+                // Handle errors here
+                console.error('Error:', error);
+            });
+        } catch (err: any) {
+            console.error("Couldn't subscribe", err);
+            return err;
+        }
+    }
 
-    //         } else {
-    //             setMessage(["Fehler beim Lock!", `${req_data.amount} PBT konnten für ${req_data.receiver} bis ${req_data.unlockDate} nicht gelockt werden. Bitte überprüfe die Daten und versuche noch einmal.`]);
-    //             setResultIs(false);
-    //             setLockLoading(false);
-    //             return;
 
-    //         }
-
-    //     } catch (err: any) {
-    //         console.error(err)
-    //         setMessage(["Fehler beim Lock!", `${req_data.amount} PBT konnten für ${req_data.receiver} bis ${req_data.unlockDate} nicht gelockt werden.` + err.toString()]);
-    //         setResultIs(false);
-    //         setLockLoading(false);
-    //         return;
-    //     }
-    // };
     React.useEffect((): void => {
         //Runs only on the first render
         updateOwnerBalance();
+
+        loadEvent("Transfer");
+        loadEvent("Approval");
     }, []);
 
     return (
@@ -266,7 +285,7 @@ export default function ManageTokens() {
                                 alignContent: 'center'
                             }}>
                             <Typography variant="body1" gutterBottom sx={{ mx: 1 }}>
-                                Your balance: {ownerBalance}
+                                Your balance: <strong>{ownerBalance}</strong>
                             </Typography>
                             <SyncIcon
                                 sx={{
@@ -439,11 +458,13 @@ export default function ManageTokens() {
                             Transfer From
                         </LoadingButton>
                     </Box>
-                </Box>
-                {/* <Box
-                    id="lock"
+                </Box>             
+
+                <Box
+                    id="Transfer-Event"
                     sx={{
-                        maxWidth: 5 / 20,
+                        maxWidth: 10 / 20,
+
                         bgcolor: 'background.paper',
                         borderRadius: 2,
                         p: 1,
@@ -453,78 +474,95 @@ export default function ManageTokens() {
                         mb: 2
                     }}>
                     <Typography component="h1" variant="h5">
-                        Lock ausführen
+                        Transfer Events
+                    </Typography>
+                    <TableContainer component={Paper} sx={{}}>
+                        <SyncIcon
+                            sx={{
+                                cursor: 'pointer',
+                                mt: 1,
+                                ml: 1
+                            }}
+                            onClick={event => (loadEvent('Transfer'))} />
+                        <Table sx={{ minWidth: 750 }} aria-label="simple table">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Nr.</TableCell>
+                                    <TableCell align="right">From</TableCell>
+                                    <TableCell align="right">To</TableCell>
+                                    <TableCell align="right">Value</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {rows_Transfer.map((row: any) => (
+                                    <TableRow
+                                        key={row.nr}
+                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                    >
+                                        <TableCell component="th" scope="row">
+                                            {row.nr}
+                                        </TableCell>
+                                        <TableCell align="right">{row.from}</TableCell>
+                                        <TableCell align="right">{row.to}</TableCell>
+                                        <TableCell align="right">{row.value}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Box>
+
+                <Box
+                    id="Approval-Event"
+                    sx={{
+                        maxWidth: 10 / 20,
+                        bgcolor: 'background.paper',
+                        borderRadius: 2,
+                        p: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        mb: 2
+                    }}>
+                    <Typography component="h1" variant="h5">
+                        Approval Events
                     </Typography>
 
-                    <Box component="form" onSubmit={handleLock} sx={{ mt: 3 }}>
-
-                        <Grid container spacing={2}>
-                            <Grid item xs={12}>
-                                <TextField
-                                    required
-                                    fullWidth
-                                    id="lock_receiver"
-                                    name="lock_receiver"
-                                    label="Receiver (address)"
-                                />
-                            </Grid>
-                            <Grid item xs={12} >
-                                <TextField
-                                    required
-                                    fullWidth
-                                    id="lock_amount"
-                                    name="lock_amount"
-                                    label="Token amount"
-                                />
-                            </Grid>
-                            <Grid item xs={12} >
-                                <Typography>Calculate future epoch date from now:</Typography>
-                            </Grid>
-                            <Grid item xs={12} sm={4}>
-                                <TextField label="Hours" fullWidth variant="outlined" value={epochHours} size="small" onChange={(ev) => { setEpochHours(Number(ev.target.value)) }} />
-                            </Grid>
-                            <Grid item xs={12} sm={4}>
-                                <TextField label="Days" fullWidth variant="outlined" value={epochDays} size="small" onChange={(ev) => { setEpochDays(Number(ev.target.value)) }} />
-                            </Grid>
-                            <Grid item xs={12} sm={4}>
-                                <TextField label="Weeks" fullWidth variant="outlined" value={epochWeeks} size="small" onChange={(ev) => { setEpochWeeks(Number(ev.target.value)) }} />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <Button
-                                    variant="outlined"
-                                    fullWidth
-                                    sx={{
-                                        height: 1
-                                    }}
-                                    onClick={() => checkFutureEpoch(epochHours!, epochDays!, epochWeeks!)}
-                                >
-                                    Calculate epoch
-                                </Button>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    required
-                                    fullWidth
-                                    id="lock_date"
-                                    name="lock_date"
-                                    label="Unlock Epoch Date"
-                                    value={futureEpochRes}
-                                    onChange={(ev) => { setFutureEpochRes(Number(ev.target.value)) }}
-                                />
-                            </Grid>
-                        </Grid>
-                        <LoadingButton
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
-                            loading={lockLoading}
-
-                        >
-                            Lock
-                        </LoadingButton>
-                    </Box>
-                </Box> */}
+                    <TableContainer component={Paper} sx={{}}>
+                        <SyncIcon
+                            sx={{
+                                cursor: 'pointer',
+                                mt: 1,
+                                ml: 1
+                            }}
+                            onClick={event => (loadEvent('Approval'))} />
+                        <Table sx={{ minWidth: 750 }} aria-label="simple table">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Nr.</TableCell>
+                                    <TableCell align="right">Owner</TableCell>
+                                    <TableCell align="right">Spender</TableCell>
+                                    <TableCell align="right">Value</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {rows_Approval.map((row: any) => (
+                                    <TableRow
+                                        key={row.nr}
+                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                    >
+                                        <TableCell component="th" scope="row">
+                                            {row.nr}
+                                        </TableCell>
+                                        <TableCell align="right">{row.owner}</TableCell>
+                                        <TableCell align="right">{row.spender}</TableCell>
+                                        <TableCell align="right">{row.value}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Box>
 
             </Box>
 
