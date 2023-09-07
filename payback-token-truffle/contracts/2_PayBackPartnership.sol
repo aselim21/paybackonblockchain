@@ -104,9 +104,16 @@ contract PayBackPartnership is Owner {
         return tokens;
     }
 
-    function removePartner(uint256 _id) isOwner public {
+    function removePartner(uint256 _id) isOwner public virtual {
         //to remove the partner, the  partner should first transfer his tokens to the owner and then the owner can delete the entry.
+        // what if the partner doesn't transfer all of his tokens??????
+        // it should be okay that the admin leaves the tokens there...if he should not still hold assets to secure this tokens.
+        // https://blog.cryptostars.is/stablecoin-development-8cb6329973b2
+        // https://www.coindesk.com/price/tether/
+        // also, payback should hold the total amout in the reserve. So this means that we should transfer the tokens back to us.
+        
         Partner storage p = partners[_id];
+        // get partner address.
         addrToPartnerId[p.walletAddr] = 0;
         delete partners[_id];
     }

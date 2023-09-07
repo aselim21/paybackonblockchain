@@ -281,7 +281,7 @@ contract PayBackToken is IERC20, PayBackPartnership, PayBackClients {
         return true;
     }
 
-    function removePartner(uint256 _id) public override isOwner {
+    function removePartner(uint256 _id) public isOwner override{
         //to remove the partner, the  partner should first transfer his tokens to the owner and then the owner can delete the entry.
         // what if the partner doesn't transfer all of his tokens??????
         // it should be okay that the admin leaves the tokens there...if he should not still hold assets to secure this tokens.

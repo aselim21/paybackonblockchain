@@ -290,7 +290,7 @@ export default function ManagePartners() {
                         Partner entfernen
                     </Typography>
                     <Typography variant="body1">
-                        ! First make sure that the partner doesn't own any tokens. Else these tokens will be lost !
+                        The Tokens that the partner owns will be transferred to the owner!
                     </Typography>
                     <Box component="form" onSubmit={handleDeletePartner} sx={{ mt: 3, width: 1 }}>
 
@@ -378,13 +378,14 @@ export default function ManagePartners() {
                                     cursor: 'pointer',
                                     mr: 1
                                 }}
-                                onClick={event => updateNumberOfPartners()} />
-                            <Typography variant="body1" gutterBottom>
+                                // onClick={event => updateNumberOfPartners()} />
+                                onClick={ event => admin.getAllPartners().then(res => {setRows(res)}) } />
+                            {/* <Typography variant="body1" gutterBottom>
                                 Number of partners: <strong>{nrPartners}</strong>
-                            </Typography>
+                            </Typography> */}
 
                         </Box>
-                        <Table sx={{ minWidth:800 }} aria-label="simple table">
+                        <Table sx={{ minWidth: 800 }} aria-label="simple table">
                             <TableHead>
                                 <TableRow>
                                     <TableCell>ID</TableCell>
@@ -427,7 +428,7 @@ export default function ManagePartners() {
                         mb: 2
                     }}>
                     <Typography component="h1" variant="h5">
-                    PartnerAdded Events
+                        PartnerAdded Events
                     </Typography>
                     <TableContainer component={Paper} sx={{}}>
                         <SyncIcon
