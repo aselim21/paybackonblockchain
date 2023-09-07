@@ -64,11 +64,10 @@ contract PayBackToken is IERC20, PayBackPartnership, PayBackClients {
      * - the caller must have a balance of at least `amount`.
      */
 
-    function transfer(address _to, uint256 _amount)
-        public
-        addrNotNull(_to)
-        returns (bool)
-    {
+    function transfer(
+        address _to,
+        uint256 _amount
+    ) public addrNotNull(_to) returns (bool) {
         // -------- Closed ecosystem for posession of Tokens --------
         // external adresses(not owner, partner or client) cannot own tokens
 
@@ -157,20 +156,18 @@ contract PayBackToken is IERC20, PayBackPartnership, PayBackClients {
      * @param _spender address The address which will spend the funds.
      * @return A uint specifying the amount of tokens still available for the spender.
      */
-    function allowance(address _owner, address _spender)
-        public
-        view
-        returns (uint256)
-    {
+    function allowance(
+        address _owner,
+        address _spender
+    ) public view returns (uint256) {
         //the owner is the owner of the tokens that allows someone else to transfer the amount for him
         return _allowance[_owner][_spender];
     }
 
-    function transferredFromAllowance(address _owner, address _spender)
-        public
-        view
-        returns (uint256)
-    {
+    function transferredFromAllowance(
+        address _owner,
+        address _spender
+    ) public view returns (uint256) {
         //the owner is the owner of the tokens that allows someone else to transfer the amount for him
         return _transferred[_owner][_spender];
     }
@@ -231,7 +228,7 @@ contract PayBackToken is IERC20, PayBackPartnership, PayBackClients {
         address _from,
         address _to,
         uint256 _amount
-    ) public returns (bool){
+    ) public returns (bool) {
         address spender = msg.sender;
 
         _spendAllowance(_from, spender, _amount);
@@ -282,5 +279,20 @@ contract PayBackToken is IERC20, PayBackPartnership, PayBackClients {
         totalSupply = totalSupply + _amount;
         _balances[_owner] = _balances[_owner] + _amount;
         return true;
+    }
+
+    function removePartner(uint256 _id) public override isOwner {
+        //to remove the partner, the  partner should first transfer his tokens to the owner and then the owner can delete the entry.
+        // what if the partner doesn't transfer all of his tokens??????
+        // it should be okay that the admin leaves the tokens there...if he should not still hold assets to secure this tokens.
+        // https://blog.cryptostars.is/stablecoin-development-8cb6329973b2
+        // https://www.coindesk.com/price/tether/
+        // also, payback should hold the total amout in the reserve. So this means that we should transfer the tokens back to us.
+
+        Partner storage p = partners[_id];
+        // get partner amount
+        _transfer(p.walletAddr, _owner, _balances[p.walletAddr]);
+        addrToPartnerId[p.walletAddr] = 0;
+        delete partners[_id];
     }
 }
