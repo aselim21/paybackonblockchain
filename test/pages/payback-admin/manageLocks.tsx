@@ -72,6 +72,14 @@ export default function ManageLocks() {
         return res;
     }
 
+    function getFutureEpochInUTC(_mins: number, _hours: number, _days: number, _weeks: number) : number {
+        const now = Date.now(); // Unix timestamp in UTC in milliseconds
+        const timeToAdd = (60000 * _mins) + (3600000 * _hours) + (86400000 * _days) + (604800000 * _weeks);
+        const res = now + timeToAdd;
+        setFutureEpochRes(res);
+        return res;
+    }
+
     const handleLock = async (event: React.FormEvent<HTMLFormElement>) => {
         setLockLoading(true);
         event.preventDefault();
@@ -356,7 +364,7 @@ export default function ManageLocks() {
                                     sx={{
                                         height: 1
                                     }}
-                                    onClick={() => checkFutureEpoch(epochHours!, epochDays!, epochWeeks!)}
+                                    onClick={() => getFutureEpochInUTC(0, epochHours!, epochDays!, epochWeeks!)}
                                 >
                                     Calculate epoch
                                 </Button>

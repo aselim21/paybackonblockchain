@@ -74,10 +74,25 @@ export default function AddPartnerForm() {
 
     async function updateCurrentTimeAsDateFromBlockchain() {
         const res = await admin.getCurrentTime();
+        console.log("TIME IN BOCKCHAIN, pure ", res, "its date is ", new Date(res * 1000));
         const d = new Date(res * 1000);
         const d_ger = d.toLocaleString('de', { timeZone: 'Europe/Berlin', timeZoneName: 'long' });
         console.log("Epoch:", res, "\nDate: ", d_ger);
         setCurrentTime("Epoch (GMT): " + res + ". " + "Local date: " + d_ger);
+
+        // ACH TO LEARN EPOCH AND DATE
+        console.log("Date now", new Date())
+   
+        console.log("Date now in UTC - original", new Date().toISOString());
+        console.log("Date now in epoch in UTC", Date.now())
+
+        console.log("Date now in UTC - check epoch", new Date(Date.now()).toISOString());
+
+        console.log("Date in 2 weeks in UTC is ", getFutureEpochInUTC(0, 0, 0, 2) )
+        console.log("Date in 2 weeks in UTC READABLE is ", new Date(getFutureEpochInUTC(0, 0, 0, 2)).toISOString() )
+        console.log("Date in 2 weeks in LOCAL READABLE is ", new Date(getFutureEpochInUTC(0, 0, 0, 2)).toLocaleString('de', { timeZone: 'Europe/Berlin', timeZoneName: 'long' }))
+        //
+        
         return d_ger;
     }
 
@@ -87,6 +102,14 @@ export default function AddPartnerForm() {
     //     setNrPartners(res);
     //     return res;
     // }
+
+    function getFutureEpochInUTC(_mins: number, _hours: number, _days: number, _weeks: number) : number {
+        const now = Date.now(); // Unix timestamp in UTC in milliseconds
+        const timeToAdd = (60000 * _mins) + (3600000 * _hours) + (86400000 * _days) + (604800000 * _weeks);
+        const res = now + timeToAdd;
+        setFutureEpochRes(res);
+        return res;
+    }
 
     async function updateNumberOfClients() {
         const res = await admin.getNumClients();
@@ -389,7 +412,7 @@ export default function AddPartnerForm() {
                             <TextField label="Days" variant="outlined" sx={{ mr:1 }} value={epochDays} size="small" onChange={(ev) => { setEpochDays(Number(ev.target.value)) }} />
                             <TextField label="Weeks" variant="outlined" value={epochWeeks} size="small" onChange={(ev) => { setEpochWeeks(Number(ev.target.value)) }} />
 
-                            <Button size="small" variant="contained" sx={{ mx:1 }} onClick={() => checkFutureEpoch(epochHours!, epochDays!, epochWeeks!)}>Go</Button>
+                            <Button size="small" variant="contained" sx={{ mx:1 }} onClick={() => getFutureEpochInUTC(0, epochHours!, epochDays!, epochWeeks!)}>Go</Button>
                         </Box>
                     </Box>
                 </Box>
