@@ -31,7 +31,8 @@ import { LoadingButton } from '@mui/lab';
 import Navbar from './components/navbar';
 import SyncIcon from '@mui/icons-material/Sync';
 import PBT_Admin from './scripts/PBT_admin';
-import Partner from './scripts/data_structures';
+import Partner from '../../public/data_structures';
+
 
 export default function ManageLocks() {
     const [message, setMessage] = React.useState<string[]>(["", ""]);

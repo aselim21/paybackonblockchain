@@ -1,7 +1,8 @@
 import { setTimeout } from 'timers/promises';
 import abi from '../../../public/ABI_PayBackToken.json'
 import Web3 from 'web3';
-import Partner from './data_structures';
+import Partner from '../../../public/data_structures';
+
 
 
 export default class PBT_Admin {
