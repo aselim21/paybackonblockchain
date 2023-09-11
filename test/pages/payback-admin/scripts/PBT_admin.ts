@@ -7,7 +7,6 @@ import Partner from './data_structures';
 export default class PBT_Admin {
     private web3: any;
     public PayBackContract: any;
-    public TransferEvent = new Event("TransferEvent");
 
     public constructor() {
         this.web3 = new Web3(new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_URL!));
@@ -39,7 +38,7 @@ export default class PBT_Admin {
 
         } catch (err) {
             console.error("Couldn't sign transaction.", err);
-            return err;
+            throw err;
         }
     }
 
@@ -60,7 +59,7 @@ export default class PBT_Admin {
             return tx_sent;
         } catch (err: any) {
             console.error("Couldn't delete partner with id:", _id);
-            return err;
+            throw err;
         }
     }
 
@@ -71,7 +70,7 @@ export default class PBT_Admin {
             return res_number;
         } catch (err: any) {
             console.error("Couldn't get partner id of addr:", _addr);
-            return err;
+            throw err;
         }
     }
 
@@ -85,7 +84,7 @@ export default class PBT_Admin {
             return res;
         } catch (err: any) {
             console.error("Couldn't gather contract info.");
-            return err;
+            throw err;
         }
     }
 
@@ -95,7 +94,7 @@ export default class PBT_Admin {
             return Number(res);
         } catch (err: any) {
             console.error("Couldn't read current time.");
-            return err;
+            throw err;
         }
     }
     public async getNumPartners(): Promise<any> {
@@ -104,7 +103,7 @@ export default class PBT_Admin {
             return Number(res);
         } catch (err: any) {
             console.error("Couldn't read numPartner.");
-            return err;
+            throw err;
         }
     }
     public async getNumClients(): Promise<any> {
@@ -113,7 +112,7 @@ export default class PBT_Admin {
             return Number(res);
         } catch (err: any) {
             console.error("Couldn't read numClients.");
-            return err;
+            throw err;
         }
     }
 
@@ -124,7 +123,7 @@ export default class PBT_Admin {
             return new Partner(_id, res.name, res.walletAddr, res.currency, Number(res.valueForToken));
         } catch (err: any) {
             console.error("Couldn't get partner with id: ", _id);
-            return err;
+            throw err;
         }
     }
 
@@ -139,7 +138,7 @@ export default class PBT_Admin {
             return arr;
         } catch (err: any) {
             console.error("Couldn't get partners.");
-            return err;
+            throw err;
         }
     }
 
@@ -149,7 +148,7 @@ export default class PBT_Admin {
             return res;
         } catch (err: any) {
             console.error("Couldn't get partner with addr: ", _addr);
-            return err;
+            throw err;
         }
     }
     public async getClientID(_addr: string): Promise<any> {
@@ -158,7 +157,7 @@ export default class PBT_Admin {
             return res;
         } catch (err: any) {
             console.error("Couldn't get client with addr: ", _addr);
-            return err;
+            throw err;
         }
     }
     public async getBalanceOf(_addr: string): Promise<any> {
@@ -167,7 +166,7 @@ export default class PBT_Admin {
             return Number(res);
         } catch (err: any) {
             console.error("Couldn't get balance of: ", _addr);
-            return err;
+            throw err;
         }
     }
 
@@ -177,7 +176,7 @@ export default class PBT_Admin {
             return Number(res);
         } catch (err: any) {
             console.error("Couldn't get allowance of owner: ", _owner, " and spender: ", _spender);
-            return err;
+            throw err;
         }
     }
 
@@ -187,7 +186,7 @@ export default class PBT_Admin {
             return Number(res);
         } catch (err: any) {
             console.error("Couldn't get transferred of allowance of owner: ", _owner, " and spender: ", _spender);
-            return err;
+            throw err;
         }
     }
 
@@ -197,7 +196,7 @@ export default class PBT_Admin {
             return Number(res);
         } catch (err: any) {
             console.error("Couldn't get points to earn of round value: ", _roundValue, " and partnerID: ", _partnerId);
-            return err;
+            throw err;
         }
     }
 
@@ -207,7 +206,7 @@ export default class PBT_Admin {
     //         return Number(res);
     //     } catch (err: any) {
     //         console.error("Couldn't get future epoch value for h:", _hours, " d:", _days, " w:", _weeks);
-    //         return err;
+    //         throw err;
     //     }
     // }
     public async transfer(_to: string, _amount: number): Promise<any> {
@@ -229,7 +228,7 @@ export default class PBT_Admin {
             return tx_sent;
         } catch (err) {
             console.error("Couldn't sign transaction.", err);
-            return err;
+            throw err;
         }
     }
 
@@ -252,7 +251,7 @@ export default class PBT_Admin {
             return tx_sent;
         } catch (err) {
             console.error("Couldn't sign transaction.", err);
-            return err;
+            throw err;
         }
     }
 
@@ -275,7 +274,7 @@ export default class PBT_Admin {
             return tx_sent;
         } catch (err) {
             console.error("Couldn't sign transaction.", err);
-            return err;
+            throw err;
         }
     }
 
@@ -297,7 +296,7 @@ export default class PBT_Admin {
             return tx_sent;
         } catch (err) {
             console.error("Couldn't sign transaction.", err);
-            return err;
+            throw err;
         }
     }
     public async reduceItemTokens(_receiver: string, _id: number, _amount: number): Promise<any> {
@@ -318,7 +317,7 @@ export default class PBT_Admin {
             return tx_sent;
         } catch (err) {
             console.error("Couldn't sign transaction.", err);
-            return err;
+            throw err;
         }
     }
 
@@ -328,7 +327,7 @@ export default class PBT_Admin {
             return Number(res);
         } catch (err: any) {
             console.error("Couldn't get number of locked items for locker:", _locker, " and receiver: ", _receiver);
-            return err;
+            throw err;
         }
     }
 
@@ -339,7 +338,7 @@ export default class PBT_Admin {
             return {amount: Number(res[0]), releaseDate: Number(res[1])};
         } catch (err: any) {
             console.error("Couldn't get the locked item with id:", _id, " for locker:", _locker, " and receiver: ", _receiver);
-            return err;
+            throw err;
         }
     }
 }
