@@ -35,7 +35,7 @@ contract PayBackClients is PayBackPartnership {
         //is not partner
         require(
             addrToPartnerId[_addr] == 0,
-            "Partner: The address is already a partner!"
+            "Client: The address is already a partner!"
         );
         //is not owner
         require(_addr != _owner, "Client: Contract owner cannot be a client");
@@ -44,6 +44,27 @@ contract PayBackClients is PayBackPartnership {
 
         ++numClient;
         addrToClientId[_addr] = numClient;
+ 
+        // emit ClientRegistered(_addr);
+        return numClient;
+    }
+
+      function addMeAsClient()
+        public
+        returns (uint256)
+    {
+        //is not partner
+        require(
+            addrToPartnerId[msg.sender] == 0,
+            "Client: The address is already a partner!"
+        );
+        //is not owner
+        require(msg.sender != _owner, "Client: Contract owner cannot be a client");
+        //check if client already exists
+        require(addrToClientId[msg.sender] == 0, "Client: Client already exists");
+
+        ++numClient;
+        addrToClientId[msg.sender] = numClient;
  
         // emit ClientRegistered(_addr);
         return numClient;
