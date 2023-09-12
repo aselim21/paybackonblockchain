@@ -10,6 +10,7 @@ contract PayBackLocker is PayBackToken("PayBackToken", "PBT", 1000000, 0, 300) {
     mapping(address => mapping(address => Item[]))
         private lockerToReceiverToItem;
     address private _contractAddr = address(this);
+    mapping(address => uint256) public lockedBalanceOf;
 
     //-------------------------Events-------------------------
 
@@ -38,7 +39,7 @@ contract PayBackLocker is PayBackToken("PayBackToken", "PBT", 1000000, 0, 300) {
                 "ERC20: Owner can only lock transactions to partners."
             );
         }
-         //case 2. sender is partner
+        //case 2. sender is partner
         else if (addrToPartnerId[msg.sender] != 0) {
             require(
                 addrToClientId[_receiver] != 0 || _receiver == _owner,
@@ -49,8 +50,8 @@ contract PayBackLocker is PayBackToken("PayBackToken", "PBT", 1000000, 0, 300) {
 
         Item memory newItem = Item(_amount, _unlockDate);
         lockerToReceiverToItem[msg.sender][_receiver].push(newItem);
-        uint256 id = lockerToReceiverToItem[msg.sender][_receiver].length-1;
-
+        lockedBalanceOf[_receiver] += _amount;
+        uint256 id = lockerToReceiverToItem[msg.sender][_receiver].length - 1;
         emit Locked(msg.sender, _receiver, id);
 
         return id;
@@ -70,7 +71,7 @@ contract PayBackLocker is PayBackToken("PayBackToken", "PBT", 1000000, 0, 300) {
         );
 
         _transfer(_contractAddr, _receiver, the_item.amount);
-
+        lockedBalanceOf[_receiver] -= the_item.amount;
         delete lockerToReceiverToItem[_locker][_receiver][_id];
         emit Released(_locker, _receiver, _id);
     }
@@ -98,7 +99,7 @@ contract PayBackLocker is PayBackToken("PayBackToken", "PBT", 1000000, 0, 300) {
         lockerToReceiverToItem[msg.sender][_receiver][_id].amount =
             the_item.amount -
             _amount;
-
+        lockedBalanceOf[_receiver] -= _amount;
         _transfer(_contractAddr, msg.sender, _amount);
 
         //     //ich weiss nicht wa passiert wenn die Waren nicht rechtzeitig bei dem Kaufer ankommen. Gilt die Retoure oder nicht mehr...
