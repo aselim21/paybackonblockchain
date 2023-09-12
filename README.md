@@ -10,9 +10,9 @@
 4. ``truffle develop``
 5. Copy the private key of the last Account and import this account in your metamask wallet in the browser.
 6. ``migrate --network development --reset``
-7. Go to ./basic-website
-8. Fix the smart contract address in the JS file
-9. run the live server for the html files
+7. Go to ./test
+8. Fix the smart contract address in the next.config.js file
+9. run the live server for the html files `npm run dev`
 10. You may need to fix the network in your metamask. Make sure you are connected to http://localhost:9545 with chainID 1337 (even though truffle says its 5777)
 
 ## User Stories

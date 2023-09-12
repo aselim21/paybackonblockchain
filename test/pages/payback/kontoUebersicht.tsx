@@ -31,54 +31,39 @@ import {
     FormGroup
 
 } from '@mui/material';
-import { LoadingButton } from '@mui/lab';
 import Navbar from './components/navbar';
 import PBT_basicReader from './scripts/PBT_basicReader';
-import Partner from '../../public/data_structures';
 import { useState, useEffect } from "react";
 import Web3 from "web3";
-import abi from '../../public/ABI_PayBackToken.json';
-import SyncIcon from '@mui/icons-material/Sync';
 
-export default function AccountUebersicht() {
+
+export default function KontoUebersicht() {
     const PBT_reader = new PBT_basicReader();
     const [account, setAccount] = useState<string>("");
     const [rows_Transfer, setRows_Transfer] = React.useState<any[]>([]);
     const [transferAccount, setTransferAccount] = useState<string>("");
-    const [resItem, setResItem] = React.useState<{ releaseDate: number, amount: number }>({ amount: 0, releaseDate: 0 });
-
+    const [resItem, setResItem] = React.useState<{ amount: number, releaseDate: string }>({ amount: 0, releaseDate: "" });
     const [rows_MyDetailedLocks, setRows_MyDetailedLocks] = React.useState<any[]>([]);
-
     const [rows_MyLockedItemsDetailed, setRows_MyLockedItemsDetailed] = React.useState<any[]>([]);
-
-    const [rows_MyDetailedTemp, setRows_MyDetailedTemp] = React.useState<any[]>([]);
-    let myDetailedTemp: any[] = [];
-    let rowNr_MyDetailedTemp = 0;
-    const [rows_MyDetailedFull, setRows_MyDetailedFull] = React.useState<any[]>([]);
-    let myDetailedFull: any[] = [];
+    const [search_lockedItemLocker, setSearch_lockedItemLocker] = React.useState<string>("");
+    const [search_lockedItemReceiver, setSearch_lockedItemReceiver] = React.useState<string>("");
+    const [search_lockedItemID, setSearch_lockedItemID] = React.useState<string>("");
 
 
     let rowNr_Transfer = 0;
     let rowNr_MyDetailerLocks = 0;
     let rowNr_MyLockedItemsDetailed = 0;
 
-
     let allEvents_Transfer: any[] = [];
     let myDetailedLocks: any[] = [];
     let myLockedItemsDetailed: any[] = [];
 
-
     let accounts: string[];
-
-    const emptyPartner = new Partner(0, "", "", "", 0);
 
     const [message, setMessage] = React.useState<string[]>(["", ""]);
     const [resultIs, setResultIs] = React.useState<boolean | null>(null);
-    const [loading, setLoading] = React.useState(false);
     const [balance, setBalance] = React.useState<number>(0);
     const [lockedBalance, setLockedBalance] = React.useState<number>(0);
-
-
 
     async function handleConnectMetamask() {
         try {
@@ -108,36 +93,25 @@ export default function AccountUebersicht() {
     }
 
     async function handleDatenLaden() {
-
         //get balance
         const balance = await PBT_reader.getBalanceOf(account);
-        console.log("Balance: ", balance)
         setBalance(balance);
 
         //get locked items
         const lockedBalance = await PBT_reader.getLockedBalanceOf(account);
-        console.log("Locked Balance: ", lockedBalance)
         setLockedBalance(lockedBalance);
 
         setRows_Transfer([]);
         setTransferAccount("");
         setRows_MyDetailedLocks([]);
-        // setRows_MyLockedItemsDetailed([]);
-        setRows_MyDetailedFull([])
+        setRows_MyLockedItemsDetailed([]);
+        setResItem({ amount: 0, releaseDate: "" });
+        setSearch_lockedItemLocker("");
+        setSearch_lockedItemReceiver("");
+        setSearch_lockedItemID("");
 
-        // myDetailedLocks = [];
-        // myLockedItemsDetailed = [];
         await loadMyTransfers(account);
-        await loadLocksTemp(account);
-        // await loadMyLocks(account);
-        await loadMyDetailedLocks(account);
-        // console.log(allMyLocks);
-        // await fillafter()
-
-
-
-        // setPartners(data);
-
+        await loadALLLocksDetailed(account);
     }
 
     const handleGetLockedItem = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -148,66 +122,12 @@ export default function AccountUebersicht() {
             receiver: data.get("lockedItem_receiver")?.toString(),
             id: Number(data.get("lockedItem_id"))
         }
-        console.log(req_data)
         if (!!!req_data.locker || !!!req_data.receiver) return;
         const res = await PBT_reader.getLockedItem(req_data.locker, req_data.receiver, req_data.id);
-        console.log("Locked Item is:", res);
-        setResItem(res)
+        setResItem({ amount: res.amount, releaseDate: res.releaseDate == 0 ? "0": epochInUTC_GermanDate(res.releaseDate * 1000) })
 
     };
 
-    async function loadLocksTemp(_addr: string) {
-        try {
-            // setTransferAccount(_addr);
-            const eventHandler = PBT_reader.PayBackContract.events["Locked"]({
-                fromBlock: 0, // The block number from which to start listening (optional)
-                toBlock: 'latest', // The block number at which to stop listening (optional)
-            });
-            eventHandler.on('data', (eventData: any) => {
-                // Handle the event data here
-                if (eventData.returnValues.locker.toLowerCase() == _addr.toLowerCase() || eventData.returnValues.receiver.toLowerCase() == _addr.toLowerCase()) {
-                    myDetailedTemp.push({
-                        nr: ++rowNr_MyDetailedTemp,
-                        locker: eventData.returnValues.locker,
-                        receiver: eventData.returnValues.receiver,
-                        itemID: Number(eventData.returnValues.id),
-                        releaseTime: 0,
-                        amount: 0
-                    })
-                    setRows_MyDetailedTemp(myDetailedTemp)
-                }
-            });
-            eventHandler.on('error', (error: any) => {
-                // Handle errors here
-                console.error('Error:', error);
-            });
-        } catch (err: any) {
-            console.error("Couldn't subscribe", err);
-            return err;
-        }
-    }
-
-    async function loadLocksFull(_addr: string) {
-        rows_MyDetailedTemp.forEach(async (lock) => {
-            console.log("The lock:", lock)
-            const item = await PBT_reader.getLockedItem(lock.locker, lock.receiver, lock.itemID);
-            myDetailedFull.push({
-                nr: lock.nr,
-                locker: lock.locker,
-                receiver: lock.receiver,
-                itemID: lock.itemID,
-                releaseTime: epochInUTC_GermanDate(item.releaseDate * 1000),
-                amount: item.amount
-            })
-            // console.log("The filled:", myDetailedFull)
-
-            setRows_MyDetailedFull(myDetailedFull)
-            // console.log("The filled:", rows_MyDetailedFull)
-
-        })
-
-
-    }
     async function loadMyTransfers(_addr: string) {
         try {
             setTransferAccount(_addr);
@@ -237,8 +157,7 @@ export default function AccountUebersicht() {
         }
     }
 
-    async function loadMyDetailedLocks(_addr: string) {
-        console.log("Loading locks")
+    async function loadALLLocksDetailed(_addr: string) {
         try {
             const eventHandler = PBT_reader.PayBackContract.events["Locked"]({
                 fromBlock: 0, // The block number from which to start listening (optional)
@@ -247,8 +166,6 @@ export default function AccountUebersicht() {
             eventHandler.on('data', async (eventData: any) => {
                 // Handle the event data here
                 if (eventData.returnValues.locker.toLowerCase() == _addr.toLowerCase()) {
-                    console.log("----------------first table")
-
                     const lock = eventData.returnValues;
                     const item = await PBT_reader.getLockedItem(lock.locker, lock.receiver, Number(lock.id));
 
@@ -257,13 +174,12 @@ export default function AccountUebersicht() {
                         locker: lock.locker,
                         receiver: lock.receiver,
                         itemID: Number(lock.id),
-                        releaseTime: epochInUTC_GermanDate(item.releaseDate * 1000),
+                        releaseTime: item.releaseDate == 0 ? 0 : epochInUTC_GermanDate(item.releaseDate * 1000),
                         amount: Number(item.amount)
                     })
                     setRows_MyDetailedLocks(myDetailedLocks);
 
                 } else if (eventData.returnValues.receiver.toLowerCase() == _addr.toLowerCase()) {
-                    console.log("----------------second table")
 
                     const lock = eventData.returnValues;
                     const item = await PBT_reader.getLockedItem(lock.locker, lock.receiver, Number(lock.id));
@@ -273,16 +189,12 @@ export default function AccountUebersicht() {
                         locker: lock.locker,
                         receiver: lock.receiver,
                         itemID: Number(lock.id),
-                        releaseTime: epochInUTC_GermanDate(item.releaseDate * 1000),
+                        releaseTime: item.releaseDate == 0 ? 0 : epochInUTC_GermanDate(item.releaseDate * 1000),
                         amount: Number(item.amount)
                     })
                     setRows_MyLockedItemsDetailed(myLockedItemsDetailed);
-                    // fillafter()
                 }
-
-
             });
-
             eventHandler.on('error', (error: any) => {
                 // Handle errors here
                 console.error('Error:', error);
@@ -297,47 +209,10 @@ export default function AccountUebersicht() {
         return new Date(_epoch).toLocaleString('de', { timeZone: 'Europe/Berlin', timeZoneName: 'long' });
     }
 
-    async function fillafter(data: any[]) {
-        console.log("in the after", data);
-        data.forEach(async function (lock) {
-            console.log("Run")
-            const item = await PBT_reader.getLockedItem(lock.locker, lock.receiver, Number(lock.itemID));
-            console.log(item)
-            //update the array
-            const arr = data;
-            console.log("arr", arr)
-            console.log("lock.nr", lock.nr)
-            const index = arr.findIndex((a) => a.nr == lock.nr)
-            console.log("index: ", index)
-            arr[index].releaseTime = epochInUTC_GermanDate(item.releaseDate * 1000);
-            arr[index].amount = Number(item.amount);
-            // larr[lock.releaseTime = epochInUTC_GermanDate(item.releaseDate * 1000);
-            // lock.amount = Number(item.amount);
-            setRows_MyLockedItemsDetailed(arr);
-            rows_MyLockedItemsDetailed[0].menge = 8
-            console.log("FINALE", rows_MyLockedItemsDetailed)
-
-        })
-        // const lock_index = myLockedItemsDetailed.findIndex((i) => { i.nr = _rowNR });
-        // const item = await PBT_reader.getLockedItem(myLockedItemsDetailed[lock_index].locker, myLockedItemsDetailed[lock_index].receiver, Number(myLockedItemsDetailed[lock_index].id));
-        // //update the array
-        // const arr = myLockedItemsDetailed;
-        // arr[lock_index].releaseTime = epochInUTC_GermanDate(item.releaseDate * 1000);
-        // arr[lock_index].amount = Number(item.amount);
-        // setRows_MyLockedItemsDetailed(arr);
-
-    }
-
-
-
     React.useEffect((): void => {
         //Runs only on the first render
 
-
-
     }, []);
-
-
 
     return (
         <>
@@ -375,7 +250,7 @@ export default function AccountUebersicht() {
 
                             <Grid item xs={12} sm={8}>
                                 <TextField
-                                    multiline
+                                    // multiline
                                     inputProps={{
                                         style: { color: '#4075c0' }
                                     }}
@@ -469,13 +344,6 @@ export default function AccountUebersicht() {
                         Meine Transfere
                     </Typography>
                     <TableContainer component={Paper} sx={{}}>
-                        {/* <SyncIcon
-                            sx={{
-                                cursor: 'pointer',
-                                mt: 1,
-                                ml: 1
-                            }}
-                            onClick={() => (loadMyTransfers(account))} /> */}
                         <Table sx={{ minWidth: 750 }} aria-label="simple table">
                             <TableHead>
                                 <TableRow>
@@ -518,16 +386,12 @@ export default function AccountUebersicht() {
                         mb: 2
                     }}>
                     <Typography component="h1" variant="h5">
-                        Meine Locks - für Kunden nicht vorhanden
+                        Meine Locks
+                    </Typography>
+                    <Typography variant="body1">
+                       für Kunden nicht vorhanden
                     </Typography>
                     <TableContainer component={Paper} sx={{}}>
-                        {/* <SyncIcon
-                            sx={{
-                                cursor: 'pointer',
-                                mt: 1,
-                                ml: 1
-                            }}
-                            onClick={() => (loadMyDetailedLocks(account))} /> */}
                         <Table sx={{ minWidth: 750 }} aria-label="simple table">
                             <TableHead>
                                 <TableRow>
@@ -579,10 +443,10 @@ export default function AccountUebersicht() {
                     <Typography component="h1" variant="h5">
                         Meine gelockte Tokens
                     </Typography>
-                    <Box component="form" onSubmit={handleGetLockedItem} sx={{ mt: 3, width:1 }}>
+                    <Box component="form" onSubmit={handleGetLockedItem} sx={{ my: 3, width: 1, padding: 1, border: 2, borderColor: '#e5ecf6' }}>
 
-                        <Typography variant='body1' sx={{ mb: 2 }}>
-                            Get the locked item:  Amount=<strong>{resItem.amount}</strong> ReleaseDate=<strong>{resItem.releaseDate}</strong> ToRelease=<strong>{resItem.releaseDate <= Date.now() ? "true" : "false"} </strong>
+                        <Typography variant='h6' sx={{ mb: 2 }}>
+                            Information über die Sperre abfragen
                         </Typography>
 
                         <Grid container spacing={2}>
@@ -592,7 +456,9 @@ export default function AccountUebersicht() {
                                     fullWidth
                                     id="lockedItem_locker"
                                     name="lockedItem_locker"
-                                    label="Locker (address)"
+                                    label="Sperrer (Adresse)"
+                                    value={search_lockedItemLocker}
+                                    onChange={(e) => {setSearch_lockedItemLocker(e.target.value)}}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={5}>
@@ -601,7 +467,11 @@ export default function AccountUebersicht() {
                                     fullWidth
                                     id="lockedItem_receiver"
                                     name="lockedItem_receiver"
-                                    label="Receiver (address)"
+                                    label="Empfänger (Adresse)"
+                                    value={search_lockedItemReceiver}
+                                    onChange={(e) => {setSearch_lockedItemReceiver(e.target.value)}}
+
+                                    
                                 />
                             </Grid>
                             <Grid item xs={12} sm={2}>
@@ -610,29 +480,53 @@ export default function AccountUebersicht() {
                                     fullWidth
                                     id="lockedItem_id"
                                     name="lockedItem_id"
-                                    label="Item ID"
+                                    label="Gegenstand ID"
+                                    value={search_lockedItemID}
+                                    onChange={(e) => {setSearch_lockedItemID(e.target.value)}}
+
                                 />
                             </Grid>
-
+                            <Grid item xs={12} sm={2}>
+                                <Button
+                                  variant="outlined"
+                                  fullWidth
+                                  sx={{
+                                      height: 1
+                                  }}
+                                    type="submit"
+                                >
+                                    Lesen
+                                </Button>
+                            </Grid>
+                            <Grid item xs={12} sm={5}>
+                                <TextField
+                                    variant='standard'
+                                    fullWidth
+                                    id="lockedItem_releaseDate"
+                                    name="lockedItem_releaseDate"
+                                    label="Gesperrt bis"
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                    value={resItem.releaseDate}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={5}>
+                                <TextField
+                                    variant='standard'
+                                    fullWidth
+                                    id="lockedItem_amount"
+                                    name="lockedItem_amount"
+                                    label="Menge"
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                    value={resItem.amount}
+                                />
+                            </Grid>
                         </Grid>
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
-
-                        >
-                            Get item
-                        </Button>
                     </Box>
                     <TableContainer component={Paper} sx={{}}>
-                        <SyncIcon
-                            sx={{
-                                cursor: 'pointer',
-                                mt: 1,
-                                ml: 1
-                            }}
-                            onClick={() => (loadLocksFull(account))} />
                         <Table sx={{ minWidth: 750 }} aria-label="simple table">
                             <TableHead>
                                 <TableRow>
@@ -645,7 +539,7 @@ export default function AccountUebersicht() {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {rows_MyDetailedFull.map((row: any) => (
+                                {rows_MyLockedItemsDetailed.map((row: any) => (
                                     <TableRow
                                         key={row.nr}
                                         sx={{ '&:last-child td, &:last-child th': { border: 0 } }}

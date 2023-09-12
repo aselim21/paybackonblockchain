@@ -5,11 +5,11 @@ import Partner from '../../../public/data_structures';
 
 
 
-export default class PBT_Admin {
+export default class PBT_partner {
     private web3: any;
     public PayBackContract: any;
-    private PRIVATE_KEY = process.env.PRIVATE_KEY_PayBack;
-    private PUBLIC_KEY = process.env.PUBLIC_KEY_PayBack;
+    private PRIVATE_KEY = process.env.PRIVATE_KEY_Partner1;
+    private PUBLIC_KEY = process.env.PUBLIC_KEY_Partner1;
 
     public constructor() {
         this.web3 = new Web3(new Web3.providers.HttpProvider(process.env.BLOCKCHAIN_URL!));
@@ -19,6 +19,7 @@ export default class PBT_Admin {
 
     public async getOwner(): Promise<string> {
         const res = await this.PayBackContract.methods.getOwner().call();
+        console.log(res)
         return res;
     }
     public async addPartner(_name: string, _addr: string, _currency: string, _valueForOne: number): Promise<any> {
@@ -215,7 +216,6 @@ export default class PBT_Admin {
     public async transfer(_to: string, _amount: number): Promise<any> {
 
         const encoded_data = this.PayBackContract.methods.transfer(_to, _amount).encodeABI();
-
         var tx = {
             from: this.PUBLIC_KEY,
             to: process.env.CONTRACT_ADDRESS,
@@ -224,10 +224,12 @@ export default class PBT_Admin {
             // value: '', // 2441406250 web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
             data: encoded_data
         }
+        console.log(tx)
         try {
             const tx_signed = await this.web3.eth.accounts.signTransaction(tx, this.PRIVATE_KEY);
             console.log(tx_signed);
             const tx_sent = await this.web3.eth.sendSignedTransaction(tx_signed.rawTransaction);
+            // console.log(tx_sent)
             return tx_sent;
         } catch (err) {
             console.error("Couldn't sign transaction.", err);
@@ -258,9 +260,9 @@ export default class PBT_Admin {
         }
     }
 
-    public async lock(_receiver: string, _amount: number, _unlockEpochDate: number): Promise<any> {
+    public async lock(_receiver: string, _amount: number, _unlockEpochDateInSec: number): Promise<any> {
 
-        const encoded_data = this.PayBackContract.methods.lock(_receiver, _amount, _unlockEpochDate).encodeABI();
+        const encoded_data = this.PayBackContract.methods.lock(_receiver, _amount, _unlockEpochDateInSec).encodeABI();
 
         var tx = {
             from: this.PUBLIC_KEY,
@@ -306,7 +308,7 @@ export default class PBT_Admin {
         const encoded_data = this.PayBackContract.methods.reduceItemTokens(_receiver, _id, _amount).encodeABI();
 
         var tx = {
-            from: this.PUBLIC_KEY,
+            from: process.env.PUBLIC_KEY_PayBack,
             to: process.env.CONTRACT_ADDRESS,
             gas: this.web3.utils.toHex(545200), // 30400
             gasPrice: await this.web3.eth.getGasPrice(),//this.web3.eth.gasPrice(), //'0x9184e72a000', // 10000000000000

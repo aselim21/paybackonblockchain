@@ -2,9 +2,13 @@
 const nextConfig = {
     env:{
         BLOCKCHAIN_URL: 'http://127.0.0.1:9545/',
-        PUBLIC_KEY_PayBack: "0x5178d8654301ab965fbcb031b5c4ed8b3ec598d2",
+        PUBLIC_KEY_PayBack: "0x358AaE4923FF466F70ed16eEdc348ac0306d8bf4",
         PRIVATE_KEY_PayBack: '396a5481b6f3355ab1b4f4797908ecb35a3526bafd77c97999daabbd9881f479',
-        CONTRACT_ADDRESS: '0x1D1131D30E9824969Fc3e0959C5E0dA71c6a726D',
+        PUBLIC_KEY_Partner1: "0xeed4e440b4b4e170737b7c803173afcd9a08a1c3",
+        PRIVATE_KEY_Partner1: '301bec3a22c3dde250bb977bbff1b544ea12acc75ba8dbdba6b25ef62314d4b7',
+        PUBLIC_KEY_Partner2: "0x4a2a9a297c8a3b9fc58c22ea93bf3ff95db956fe",
+        PRIVATE_KEY_Partner2: 'd557f3f226e0f053bcf462eb3c99bb36f494194d4761bac7cd98030683ac2fc6',
+        CONTRACT_ADDRESS: '0x3B85EB709f0fb9EB1383Fb52522C7ACc2EB57cfE',
     }
 }
 
