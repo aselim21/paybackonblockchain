@@ -66,7 +66,7 @@ contract PayBackLocker is PayBackToken("PayBackToken", "PBT", 1000000, 0, 300) {
         Item memory the_item = lockerToReceiverToItem[_locker][_receiver][_id];
         //check if date is okay
         require(
-            the_item.unlockDate >= block.timestamp,
+            the_item.unlockDate <= block.timestamp,
             "Locker: It is early to release the tokens."
         );
 
