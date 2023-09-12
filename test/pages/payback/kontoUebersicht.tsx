@@ -329,8 +329,9 @@ export default function KontoUebersicht() {
                 <Box
                     id="Transfer-Event"
                     sx={{
-                        maxWidth: 20 / 20,
-                        minWidth: 15 / 20,
+                        width: 17/20,
+                        // maxWidth: 20 / 20,
+                        // minWidth: 15 / 20,
 
                         bgcolor: 'background.paper',
                         borderRadius: 2,
@@ -374,9 +375,9 @@ export default function KontoUebersicht() {
                 <Box
                     id="MyLocks"
                     sx={{
-                        maxWidth: 20 / 20,
-                        minWidth: 15 / 20,
-
+                        // maxWidth: 20 / 20,
+                        // minWidth: 15 / 20,
+                        width: 17/20,
                         bgcolor: 'background.paper',
                         borderRadius: 2,
                         p: 1,
@@ -401,8 +402,6 @@ export default function KontoUebersicht() {
                                     <TableCell align="right">Gegenstand ID</TableCell>
                                     <TableCell align="right">Zeit der Entsperrung</TableCell>
                                     <TableCell align="right">Menge</TableCell>
-
-
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -414,7 +413,7 @@ export default function KontoUebersicht() {
                                         <TableCell component="th" scope="row">
                                             {row.nr}
                                         </TableCell>
-                                        <TableCell align="right">{row.locker}</TableCell>
+                                        <TableCell align="right"> <Typography sx={{ color: "#003eb0" }}>{row.locker}</Typography> </TableCell>
                                         <TableCell align="right">{row.receiver}</TableCell>
                                         <TableCell align="right">{row.itemID}</TableCell>
                                         <TableCell align="right">{row.releaseTime}</TableCell>
@@ -429,9 +428,9 @@ export default function KontoUebersicht() {
                 <Box
                     id="MyLockedItems"
                     sx={{
-                        maxWidth: 20 / 20,
-                        minWidth: 15 / 20,
-
+                        // maxWidth: 20 / 20,
+                        // minWidth: 15 / 20,
+                        width: 17/20,
                         bgcolor: 'background.paper',
                         borderRadius: 2,
                         p: 1,
@@ -548,7 +547,7 @@ export default function KontoUebersicht() {
                                             {row.nr}
                                         </TableCell>
                                         <TableCell align="right">{row.locker}</TableCell>
-                                        <TableCell align="right">{row.receiver}</TableCell>
+                                        <TableCell align="right"> <Typography sx={{ color: "#003eb0" }}>{row.receiver}</Typography></TableCell>
                                         <TableCell align="right">{row.itemID}</TableCell>
                                         <TableCell align="right">{row.releaseTime}</TableCell>
                                         <TableCell align="right">{row.amount}</TableCell>
