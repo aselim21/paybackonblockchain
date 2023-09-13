@@ -33,7 +33,7 @@ import {
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import Navbar from './components/navbar';
-import PBT_basicReader from './scripts/PBT_basicReader';
+import PBT_basicReader from '../../public/PBT_basicReader';
 import Partner from '../../public/data_structures';
 import { useState, useEffect } from "react";
 import Web3 from "web3";
@@ -136,12 +136,12 @@ export default function Kunde() {
                 //     console.log(`sent: ${hash}`);
                 //     setLoading(false);
                 // })
-                .on('transactionHash', (hash) => {
+                .on('transactionHash', (hash: any) => {
 
                     console.log(`Transaction sent with hash: ${hash}`);
                     setLoading(false);
                 })
-                .on('receipt', (hash) => {
+                .on('receipt', (hash: any) => {
 
                     console.log(`receipt: ${hash}`);
                     setLoading(false);
@@ -152,7 +152,7 @@ export default function Kunde() {
                     setResultIs(true);
                     setLoading(false);
                 })
-                .on('error', (error) => {
+                .on('error', (error: any) => {
                     // alert(`Transaction failed with error: ${error.message}`);
                     console.log(error)
                     setMessage(["Fehler!", `Der Kunde konte nicht angemeldet werden. ` + error])

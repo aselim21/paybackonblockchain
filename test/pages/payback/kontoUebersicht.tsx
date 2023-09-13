@@ -32,7 +32,7 @@ import {
 
 } from '@mui/material';
 import Navbar from './components/navbar';
-import PBT_basicReader from './scripts/PBT_basicReader';
+import PBT_basicReader from '../../public/PBT_basicReader';
 import { useState, useEffect } from "react";
 import Web3 from "web3";
 

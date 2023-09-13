@@ -32,14 +32,16 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useState, useEffect } from "react";
+import PBT_partner from  "../../../public/PBT_partner"
 import Web3 from "web3";
-import PBT_partner from '../scripts/PBT_partner';
 
 const PARTNER_ID = 1;
 
 
 
 export default function ShoppingCart() {
+   
+
     const partner = new PBT_partner();
     const [message, setMessage] = React.useState<string[]>(["", ""]);
 
@@ -100,7 +102,7 @@ export default function ShoppingCart() {
 
         //calc pbt zu verdienen
         const pbtToEarn = await checkPointsToEarn(totalValue, PARTNER_ID);
-        setPointsToEarnRes(pbtToEarn);
+        setPointsToEarnRes(pbtToEarn!);
         if (pbtToEarn == 0) {
             setMessage(["Sorry!", `Es sind keine Punkte zum Kaufen.`]);
             return false;
@@ -126,7 +128,7 @@ export default function ShoppingCart() {
         } catch (error) {
             setMessage(["Fehler!", `${_addr} ist nicht eine gültige Addresse.`])
         }
-        return clientID;
+        return Number(clientID);
     }
 
     async function checkPointsToEarn(_value: number, _partnerId: number) {

@@ -1,11 +1,8 @@
-import { setTimeout } from 'timers/promises';
-import abi from '../../../public/ABI_PayBackToken.json'
+import abi from './ABI_PayBackToken.json'
 import Web3 from 'web3';
-import Partner from '../../../public/data_structures';
+import Partner from './data_structures';
 
-
-
-export default class PBT_Admin {
+class PBT_Admin{
     private web3: any;
     public PayBackContract: any;
     private PRIVATE_KEY = process.env.PRIVATE_KEY_PayBack;
@@ -16,6 +13,7 @@ export default class PBT_Admin {
         this.web3.eth.accounts.privateKeyToAccount(`0x${this.PRIVATE_KEY}`);
         this.PayBackContract = new this.web3.eth.Contract(abi, process.env.CONTRACT_ADDRESS);
     }
+    
 
     public async getOwner(): Promise<string> {
         const res = await this.PayBackContract.methods.getOwner().call();
@@ -345,3 +343,5 @@ export default class PBT_Admin {
         }
     }
 }
+
+export default PBT_Admin;

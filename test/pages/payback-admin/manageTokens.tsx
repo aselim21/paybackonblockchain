@@ -30,7 +30,7 @@ import {
 import { LoadingButton } from '@mui/lab';
 import Navbar from './components/navbar';
 import SyncIcon from '@mui/icons-material/Sync';
-import PBT_Admin from './scripts/PBT_admin';
+import PBT_Admin from '../../public/PBT_admin';
 
 export default function ManageTokens() {
     const [message, setMessage] = React.useState<string[]>(["", ""]);
