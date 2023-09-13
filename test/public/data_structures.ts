@@ -1,11 +1,11 @@
 export default class Partner {
-    id: Number;
-    name: String;
-    address: String;
-    currency: String;
-    valueForToken: Number;
+    id: number;
+    name: string;
+    address: string;
+    currency: string;
+    valueForToken: number;
 
-    constructor(id: Number, name: String, address: String, currency: String, valueForToken: Number) {
+    constructor(id: number, name: string, address: string, currency: string, valueForToken: number) {
         this.id = id;
         this.name = name;
         this.address = address;
