@@ -1,5 +1,11 @@
 # PayBackOnBlockchain
 
+## How to test the system
+
+Install Metamask and create a account.
+
+Go to https://sepoliafaucet.com/, create an account and get some test tokens.
+
 ## How to run the code
 
 1. ``cd payback-token-truffle``
