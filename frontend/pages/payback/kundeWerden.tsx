@@ -37,7 +37,9 @@ import PBT_basicReader from '../../public/PBT_basicReader';
 import Partner from '../../public/data_structures';
 import { useState, useEffect } from "react";
 import Web3 from "web3";
-import abi from '../../public/ABI_PayBackToken.json'
+import abi from '../../public/ABI_PayBackToken.json';
+import PBT_Admin from '../../public/PBT_admin';
+
 
 
 // import SyncIcon from '@mui/icons-material/Sync';
@@ -45,10 +47,10 @@ import abi from '../../public/ABI_PayBackToken.json'
 
 
 
-export default function Kunde() {
+export default function KundeWerden() {
     const PBT_reader = new PBT_basicReader();
     const [account, setAccount] = useState<string>("");
-    const [sign_w_Metamask, setSign_w_Metamask] = useState<Boolean>(false);
+    // const [sign_w_Metamask, setSign_w_Metamask] = useState<Boolean>(false);
     let accounts: string[];
 
     // const emptyPartner = new Partner(0, "", "", "", 0);
@@ -57,6 +59,8 @@ export default function Kunde() {
     const [message, setMessage] = React.useState<string[]>(["", ""]);
     const [resultIs, setResultIs] = React.useState<boolean | null>(null);
     const [loading, setLoading] = React.useState(false);
+
+    const admin = new PBT_Admin();
 
     async function handleConnectMetamask() {
         try {
@@ -105,83 +109,82 @@ export default function Kunde() {
         const data = await contract.methods.getOwner().call();
         console.log(data);
     };
-    const initiateTransac_addMeAsClient = async () => {
-        try {
-            const web3 = new Web3(window.ethereum);
-            const contract = new web3.eth.Contract(
-                abi,
-                process.env.CONTRACT_ADDRESS
-            );
+    // const initiateTransac_addMeAsClient = async () => {
+    //     try {
+    //         const web3 = new Web3(window.ethereum);
+    //         const contract = new web3.eth.Contract(
+    //             abi,
+    //             process.env.CONTRACT_ADDRESS
+    //         );
 
-            const gas = await contract.methods.addMeAsClient().estimateGas();
-            const gasPrice = await web3.eth.getGasPrice();
-            //   const nonce = await web3.eth.getTransactionCount(account);
-            const data = contract.methods.addMeAsClient().encodeABI();
+    //         const gas = await contract.methods.addMeAsClient().estimateGas();
+    //         const gasPrice = await web3.eth.getGasPrice();
+    //         //   const nonce = await web3.eth.getTransactionCount(account);
+    //         const data = contract.methods.addMeAsClient().encodeABI();
 
-            const txObject = {
-                from: account,
-                to: process.env.CONTRACT_ADDRESS,
-                gasPrice: gasPrice,
-                gas: gas,
-                // nonce: nonce,
-                data: data,
-            };
-            await web3.eth.sendTransaction(txObject)
-                // .on('sending', (hash) => {
-                //     console.log(`sending: ${hash}`);
-                //     setLoading(false);
-                // })
-                // .on('sent', (hash) => {
+    //         const txObject = {
+    //             from: account,
+    //             to: process.env.CONTRACT_ADDRESS,
+    //             gasPrice: gasPrice,
+    //             gas: gas,
+    //             // nonce: nonce,
+    //             data: data,
+    //         };
+    //         await web3.eth.sendTransaction(txObject)
+    //             // .on('sending', (hash) => {
+    //             //     console.log(`sending: ${hash}`);
+    //             //     setLoading(false);
+    //             // })
+    //             // .on('sent', (hash) => {
 
-                //     console.log(`sent: ${hash}`);
-                //     setLoading(false);
-                // })
-                .on('transactionHash', (hash: any) => {
+    //             //     console.log(`sent: ${hash}`);
+    //             //     setLoading(false);
+    //             // })
+    //             .on('transactionHash', (hash: any) => {
 
-                    console.log(`Transaction sent with hash: ${hash}`);
-                    setLoading(false);
-                })
-                .on('receipt', (hash: any) => {
+    //                 console.log(`Transaction sent with hash: ${hash}`);
+    //                 setLoading(false);
+    //             })
+    //             .on('receipt', (hash: any) => {
 
-                    console.log(`receipt: ${hash}`);
-                    setLoading(false);
-                })
-                .on('confirmation', (receipt: any) => {
-                    console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
-                    setMessage(["Erfolg", `Der Kunde wurde erfolgreich angemeldet.`])
-                    setResultIs(true);
-                    setLoading(false);
-                })
-                .on('error', (error: any) => {
-                    // alert(`Transaction failed with error: ${error.message}`);
-                    console.log(error)
-                    setMessage(["Fehler!", `Der Kunde konte nicht angemeldet werden. ` + error])
-                    setResultIs(true);
-                    setLoading(false);
-                });
+    //                 console.log(`receipt: ${hash}`);
+    //                 setLoading(false);
+    //             })
+    //             .on('confirmation', (receipt: any) => {
+    //                 console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
+    //                 setMessage(["Erfolg", `Der Kunde wurde erfolgreich angemeldet.`])
+    //                 setResultIs(true);
+    //                 setLoading(false);
+    //             })
+    //             .on('error', (error: any) => {
+    //                 // alert(`Transaction failed with error: ${error.message}`);
+    //                 console.log(error)
+    //                 setMessage(["Fehler!", `Der Kunde konte nicht angemeldet werden. ` + error])
+    //                 setResultIs(true);
+    //                 setLoading(false);
+    //             });
 
-            // Send the transaction and wait for confirmation
-            // const transactionHash = await window.ethereum.request({ method: 'eth_sendTransaction', params: [txObject] });
-            // console.log(`Transaction sent with hash: ${transactionHash}`);
+    //         // Send the transaction and wait for confirmation
+    //         // const transactionHash = await window.ethereum.request({ method: 'eth_sendTransaction', params: [txObject] });
+    //         // console.log(`Transaction sent with hash: ${transactionHash}`);
 
-            // // Wait for the transaction to be mined (optional)
-            // const receipt = await web3.eth.getTransactionReceipt(transactionHash);
-            // console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
-        } catch (err:any) {
-            console.log(err);
-            setMessage(["Fehler!", `Der Kunde konte nicht angemeldet werden. ` + err.data.message])
-            setResultIs(true);
-            setLoading(false);
-        }
-    };
+    //         // // Wait for the transaction to be mined (optional)
+    //         // const receipt = await web3.eth.getTransactionReceipt(transactionHash);
+    //         // console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
+    //     } catch (err:any) {
+    //         console.log(err);
+    //         setMessage(["Fehler!", `Der Kunde konte nicht angemeldet werden. ` + err.data.message])
+    //         setResultIs(true);
+    //         setLoading(false);
+    //     }
+    // };
 
     const handleRegisterClient = async (event: React.FormEvent<HTMLFormElement>) => {
         setLoading(true);
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         const req_data = {
-            addr: data.get("wallet_addr")?.toString(),
-            sign_w_Metamask: Boolean(data.get("sign_w_Metamask"))
+            addr: data.get("wallet_addr")?.toString()
         }
         console.log(req_data)
         if (!!!req_data.addr) {
@@ -191,17 +194,57 @@ export default function Kunde() {
             return;
         }
         try {
-            if (req_data.sign_w_Metamask) {
-                initiateTransac_addMeAsClient()
+
+            const res = await admin.addClient(req_data.addr);
+            if (!!res.transactionHash) {
+                setMessage(["Erfolg", ` Du bist jetzt als Kunde angemeldet.`])
+                setResultIs(true);
+                setLoading(false);
+                return;
+
+            } else {
+                setMessage(["Fehler", `Adresse ${req_data.addr} konnte als Kunde nicht angemeldet werden.`])
+                setResultIs(false);
+                setLoading(false);
+                return;
+
             }
         } catch (err: any) {
             console.error(err)
-            setMessage(["Fehler!", "Der Partner konnte nicht angemeldet werden. " + err.toString()]);
+            setMessage(["Fehler!", `Adresse ${req_data.addr} konnte als Kunde nicht angemeldet werden. ` + err.toString()]);
             setResultIs(false);
             setLoading(false);
             return;
         }
     };
+
+    // const handleRegisterClient = async (event: React.FormEvent<HTMLFormElement>) => {
+    //     setLoading(true);
+    //     event.preventDefault();
+    //     const data = new FormData(event.currentTarget);
+    //     const req_data = {
+    //         addr: data.get("wallet_addr")?.toString(),
+    //         sign_w_Metamask: Boolean(data.get("sign_w_Metamask"))
+    //     }
+    //     console.log(req_data)
+    //     if (!!!req_data.addr) {
+    //         setMessage(["Fehler!", `Wallet Addresse ist verpfilchtend! Bitte überprüfe die Daten und versuche noch einmal.`])
+    //         setResultIs(false);
+    //         setLoading(false);
+    //         return;
+    //     }
+    //     try {
+    //         if (req_data.sign_w_Metamask) {
+    //             initiateTransac_addMeAsClient()
+    //         }
+    //     } catch (err: any) {
+    //         console.error(err)
+    //         setMessage(["Fehler!", "Der Partner konnte nicht angemeldet werden. " + err.toString()]);
+    //         setResultIs(false);
+    //         setLoading(false);
+    //         return;
+    //     }
+    // };
 
     React.useEffect((): void => {
         //Runs only on the first render
@@ -278,7 +321,7 @@ export default function Kunde() {
                                     value={account}
 
                                     InputProps={{
-                                        readOnly: Boolean(sign_w_Metamask),
+                                        readOnly: true,
                                     }}
                                     onChange={(event: React.SyntheticEvent) => setAccount((event.target as HTMLInputElement).value)}
                                 // defaultValue="0x93a6cbd8331b53e5276a86237bace339fc91e439"
@@ -296,7 +339,7 @@ export default function Kunde() {
                                     Connect Metamask
                                 </Button>
                             </Grid>
-                            <Grid item xs={12}>
+                            {/* <Grid item xs={12}>
                                 <FormGroup aria-label="position" row>
                                     <FormControlLabel
                                         value="true"
@@ -309,7 +352,7 @@ export default function Kunde() {
                                     // onChange={(event: React.SyntheticEvent) => setSign_w_Metamask(Boolean((event.target as HTMLInputElement).value))}
                                     />
                                 </FormGroup>
-                            </Grid>
+                            </Grid> */}
 
 
 

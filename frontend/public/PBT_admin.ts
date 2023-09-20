@@ -43,6 +43,30 @@ class PBT_Admin{
         }
     }
 
+    public async addClient(_addr: string): Promise<any> {
+
+        const encoded_data = this.PayBackContract.methods.addClient(_addr).encodeABI();
+
+        var tx = {
+            from: this.PUBLIC_KEY,
+            to: process.env.CONTRACT_ADDRESS,
+            gas: this.web3.utils.toHex(545200), // 30400
+            gasPrice: await this.web3.eth.getGasPrice(),//this.web3.eth.gasPrice(), //'0x9184e72a000', // 10000000000000
+            // value: '', // 2441406250 web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+            data: encoded_data
+        }
+        try {
+            const tx_signed = await this.web3.eth.accounts.signTransaction(tx, this.PRIVATE_KEY);
+            console.log(tx_signed);
+            const tx_sent = await this.web3.eth.sendSignedTransaction(tx_signed.rawTransaction);
+            return tx_sent;
+
+        } catch (err) {
+            console.error("Couldn't sign transaction.", err);
+            throw err;
+        }
+    }
+
     public async deletePartner(_id: number): Promise<any> {
         const encoded_data = this.PayBackContract.methods.removePartner(_id).encodeABI();
         var tx = {

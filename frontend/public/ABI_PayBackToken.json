@@ -138,19 +138,6 @@
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "addMeAsClient",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"inputs": [
 			{
 				"internalType": "string",

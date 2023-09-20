@@ -151,7 +151,7 @@ export default function ManageLocks() {
                 return;
 
             } else {
-                setMessage(["Erfolg", `Locking Item mit Locker:${req_data.locker}, Receiver:${req_data.receiver} und ID: ${req_data.id} wurde erfolgreich released.`])
+                setMessage(["Fehler bei Releasing!", `Freigeben von dem Item mit Locker:${req_data.locker}, Receiver:${req_data.receiver} und ID: ${req_data.id} ist fehlgeschlagen.`])
                 setResultIs(false);
                 setReleaseLoading(false);
                 return;
@@ -160,7 +160,7 @@ export default function ManageLocks() {
 
         } catch (err: any) {
             console.error(err)
-            setMessage(["Fehler bei Releasing!", `Locking Item mit Locker:${req_data.locker}, Receiver:${req_data.receiver} und ID: ${req_data.id} konnte nicht released werden.` + err.toString()]);
+            setMessage(["Fehler bei Releasing!", `Freigeben von dem Item mit Locker:${req_data.locker}, Receiver:${req_data.receiver} und ID: ${req_data.id} ist fehlgeschlagen.` + err.toString()]);
             setResultIs(false);
             setReleaseLoading(false);
             return;
@@ -194,7 +194,7 @@ export default function ManageLocks() {
                 return;
 
             } else {
-                setMessage(["Erfolg", `Reducing Item von Receiver:${req_data.receiver} mit ID: ${req_data.id} wurde erfolgreich auf ${req_data.amount} verringert.`])
+                setMessage(["Fehler", `Reducing Item von Receiver:${req_data.receiver} mit ID: ${req_data.id} auf ${req_data.amount} ist fehlgeschlagen.`])
                 setResultIs(false);
                 setReduceItemTokensLoading(false);
                 return;
