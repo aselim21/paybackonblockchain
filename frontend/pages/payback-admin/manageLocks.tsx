@@ -324,7 +324,7 @@ export default function ManageLocks() {
                     <Box component="form" onSubmit={handleLock} sx={{ mt: 3 }}>
 
                         <Typography variant='body2' sx={{ mb: 2 }}>
-                            Partners and owner can lock their tokens for a specific amount of time before sending them to their receiver.
+                            Partners and the owner can lock their tokens for a specific amount of time before sending them to their receiver.
                         </Typography>
 
                         <Grid container spacing={2}>
@@ -479,7 +479,7 @@ export default function ManageLocks() {
                     <Box component="form" onSubmit={handleRelease} sx={{ mt: 3 }}>
 
                         <Typography variant='body2' sx={{ mb: 2 }}>
-                            Owner can and must release all tokens, that have an expired release date.
+                            The owner can and must release all tokens, that have an expired release date.
                         </Typography>
 
                         <Grid container spacing={2}>
