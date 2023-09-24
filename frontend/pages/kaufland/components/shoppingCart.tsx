@@ -32,7 +32,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useState, useEffect } from "react";
-import PBT_partner from  "../../../public/PBT_partner"
+import PBT_partner from "../../../public/PBT_partner"
 import Web3 from "web3";
 
 const PARTNER_ID = 1;
@@ -40,7 +40,7 @@ const PARTNER_ID = 1;
 
 
 export default function ShoppingCart() {
-   
+
 
     const partner = new PBT_partner();
     const [message, setMessage] = React.useState<string[]>(["", ""]);
@@ -391,15 +391,33 @@ export default function ShoppingCart() {
                             Versandkosten: Kostenlos
                         </Typography>
                         <br />
-                        <Typography
-                            sx={{
-                                fontWeight: "bold",
-                            }}
-                            component="span"
-                            variant="h6"
-                        >
-                            Gesamtsumme (inkl. MwSt.): {totalValue} €
-                        </Typography>
+                        <Grid container spacing={2} sx={{ my: 1 }}>
+                            <Grid item xs={12} sm={10}>
+                                <Typography
+                                    sx={{
+                                        fontWeight: "bold",
+                                    }}
+                                    component="span"
+                                    variant="h6"
+                                >
+                                    Gesamtsumme (inkl. MwSt.):
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={12} sm={2}>
+                                <TextField
+                                  inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                                    size="small"
+                                    // type="number"
+                                    fullWidth
+                                    id="total_value"
+                                    name="total_value"
+                                    // label="Wallet Adresse"
+                                    value={totalValue}
+                                    onChange={(event: React.SyntheticEvent) => setTotalValue(Number((event.target as HTMLInputElement).value))}
+                                />
+                            </Grid>
+                        </Grid>
+
                     </Box>
                     <Grid container spacing={2} sx={{ my: 1 }}>
                         <Grid item xs={12} sm={6}>
