@@ -19,7 +19,7 @@ import Copyright from '../../components/Copyright';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useRouter } from 'next/router';
 const home = "/payback"
-const pages = [{ name: 'Kunde werden', link: `${home}/kundeWerden` }, { name: 'Partner werden', link: 'https://www.payback.group/de/partner' }, { name: 'Konto Übersicht', link: `${home}/kontoUebersicht` }];
+const pages = [{ name: 'Kunde werden', link: `${home}/kundeWerden` }, { name: 'Partner werden', link: 'https://www.payback.group/de/partner' }, { name: 'Kontoübersicht', link: `${home}/kontoUebersicht` }];
 // const settings = ['Einstellungen', 'Logout'];
 
 const ThemePayback = createTheme({

@@ -48,7 +48,9 @@ export default function KontoUebersicht() {
     const [search_lockedItemLocker, setSearch_lockedItemLocker] = React.useState<string>("");
     const [search_lockedItemReceiver, setSearch_lockedItemReceiver] = React.useState<string>("");
     const [search_lockedItemID, setSearch_lockedItemID] = React.useState<string>("");
+    const [user, setUser] = useState<any>("...");
 
+    const delayLoading = 1500;
 
     let rowNr_Transfer = 0;
     let rowNr_MyDetailerLocks = 0;
@@ -93,6 +95,12 @@ export default function KontoUebersicht() {
     }
 
     async function handleDatenLaden() {
+
+        //get usertype
+        const user = await getUserDetail(account);
+        setUser(user);
+
+
         //get balance
         const balance = await PBT_reader.getBalanceOf(account);
         setBalance(balance);
@@ -124,9 +132,32 @@ export default function KontoUebersicht() {
         }
         if (!!!req_data.locker || !!!req_data.receiver) return;
         const res = await PBT_reader.getLockedItem(req_data.locker, req_data.receiver, req_data.id);
-        setResItem({ amount: res.amount, releaseDate: res.releaseDate == 0 ? "0": epochInUTC_GermanDate(res.releaseDate * 1000) })
+        setResItem({ amount: res.amount, releaseDate: res.releaseDate == 0 ? "0" : epochInUTC_GermanDate(res.releaseDate * 1000) })
 
     };
+    async function getUserDetail(_addr: string): Promise<{ type: string, details: { name: string, currency: string, valueForToken: string } }> {
+        //check if its partner
+        console.log("checking for user", _addr)
+        const isPartner = await PBT_reader.getPartnerId(_addr);
+        if (isPartner) {
+            console.log(isPartner + "Is partner" + _addr)
+            const partnerDetails = await PBT_reader.getPartner(isPartner);
+            return { type: "Partner", details: { name: partnerDetails.name, currency: partnerDetails.currency, valueForToken: partnerDetails.valueForToken } }
+        }
+        const isClient = !isPartner && await PBT_reader.getClientID(_addr);
+        if (isClient) {
+            console.log(isClient + "Is client" + _addr)
+
+            return { type: "Kunde", details: { name: "", currency: "", valueForToken: "" } }
+        }
+        const owner = !isClient && !isPartner && await PBT_reader.getOwner();
+        if (owner != false && owner.toLowerCase() == _addr.toLowerCase()) {
+            console.log(owner + "Is owner" + _addr)
+
+            return { type: "Vertragseigentümer", details: { name: "", currency: "", valueForToken: "" } }
+        }
+        return { type: "nicht erkannt", details: { name: "", currency: "", valueForToken: "" } }
+    }
 
     async function loadMyTransfers(_addr: string) {
         try {
@@ -135,22 +166,50 @@ export default function KontoUebersicht() {
                 fromBlock: 0, // The block number from which to start listening (optional)
                 toBlock: 'latest', // The block number at which to stop listening (optional)
             });
-            eventHandler.on('data', (eventData: any) => {
-                // Handle the event data here
-                if (eventData.returnValues.from.toLowerCase() == _addr.toLowerCase() || eventData.returnValues.to.toLowerCase() == _addr.toLowerCase()) {
-                    allEvents_Transfer.push({
-                        nr: ++rowNr_Transfer,
-                        from: eventData.returnValues.from,
-                        to: eventData.returnValues.to,
-                        value: Number(eventData.returnValues.value)
-                    })
-                    setRows_Transfer(allEvents_Transfer)
+            eventHandler.on('data', async (eventData: any) => {
+                console.log("These are all the transfer events")
+                console.log("from" + eventData.returnValues.from + "to" + eventData.returnValues.to)
+
+                //if i am _from => check who is _to
+                if (eventData.returnValues.from.toLowerCase() == _addr.toLowerCase()) {
+                    console.log("I am the from address")
+                    console.log("Checking who is the to")
+                    const _to = await getUserDetail(eventData.returnValues.to);
+                    if (_to.type != "nicht erkannt") {
+                        allEvents_Transfer.push({
+                            nr: ++rowNr_Transfer,
+                            from: eventData.returnValues.from,
+                            from_info: "",
+                            to: eventData.returnValues.to,
+                            to_info: _to,
+                            value: Number(eventData.returnValues.value)
+                        })
+                        // setRows_Transfer(allEvents_Transfer)
+                    }
+                }
+                //if i am _to => check who is _from
+                else if (eventData.returnValues.to.toLowerCase() == _addr.toLowerCase()) {
+                    const _from = await getUserDetail(eventData.returnValues.from);
+                    if (_from.type != "nicht erkannt") {
+                        allEvents_Transfer.push({
+                            nr: ++rowNr_Transfer,
+                            from: eventData.returnValues.from,
+                            from_info: _from,
+                            to: eventData.returnValues.to,
+                            to_info: "",
+                            value: Number(eventData.returnValues.value)
+                        })
+                        // setRows_Transfer(allEvents_Transfer)
+                    }
                 }
             });
             eventHandler.on('error', (error: any) => {
                 // Handle errors here
                 console.error('Error:', error);
             });
+            setTimeout(() => {
+                setRows_Transfer(allEvents_Transfer)
+            }, delayLoading);
         } catch (err: any) {
             console.error("Couldn't subscribe", err);
             return err;
@@ -164,41 +223,53 @@ export default function KontoUebersicht() {
                 toBlock: 'latest', // The block number at which to stop listening (optional)
             });
             eventHandler.on('data', async (eventData: any) => {
+                console.log(eventData.returnValues)
                 // Handle the event data here
+                // I locked tokens:
                 if (eventData.returnValues.locker.toLowerCase() == _addr.toLowerCase()) {
                     const lock = eventData.returnValues;
                     const item = await PBT_reader.getLockedItem(lock.locker, lock.receiver, Number(lock.id));
-
+                    //check who is the receiver
+                    const userInfo = await getUserDetail(lock.receiver);
                     myDetailedLocks.push({
                         nr: ++rowNr_MyDetailerLocks,
                         locker: lock.locker,
                         receiver: lock.receiver,
+                        receiver_info: userInfo,
                         itemID: Number(lock.id),
                         releaseTime: item.releaseDate == 0 ? 0 : epochInUTC_GermanDate(item.releaseDate * 1000),
                         amount: Number(item.amount)
                     })
-                    setRows_MyDetailedLocks(myDetailedLocks);
+                    // setRows_MyDetailedLocks(myDetailedLocks);
 
-                } else if (eventData.returnValues.receiver.toLowerCase() == _addr.toLowerCase()) {
+                } //my locked tokens:
+                else if (eventData.returnValues.receiver.toLowerCase() == _addr.toLowerCase()) {
 
                     const lock = eventData.returnValues;
                     const item = await PBT_reader.getLockedItem(lock.locker, lock.receiver, Number(lock.id));
 
+                    const userInfo = await getUserDetail(lock.locker);
+
                     myLockedItemsDetailed.push({
                         nr: ++rowNr_MyLockedItemsDetailed,
                         locker: lock.locker,
+                        locker_info: userInfo,
                         receiver: lock.receiver,
                         itemID: Number(lock.id),
                         releaseTime: item.releaseDate == 0 ? 0 : epochInUTC_GermanDate(item.releaseDate * 1000),
                         amount: Number(item.amount)
                     })
-                    setRows_MyLockedItemsDetailed(myLockedItemsDetailed);
+                    // setRows_MyLockedItemsDetailed(myLockedItemsDetailed);
                 }
             });
             eventHandler.on('error', (error: any) => {
                 // Handle errors here
                 console.error('Error:', error);
             });
+            setTimeout(() => {
+                setRows_MyLockedItemsDetailed(myLockedItemsDetailed);
+                setRows_MyDetailedLocks(myDetailedLocks);
+            }, delayLoading);
         } catch (err: any) {
             console.error("Couldn't subscribe", err);
             return err;
@@ -239,10 +310,10 @@ export default function KontoUebersicht() {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        mb: 2
+                        mb: 2,
                     }}>
-                    <Typography component="h1" variant="h5">
-                        Übersicht für Kunden und Partner
+                    <Typography component="h1" variant="h5" sx={{ mt: 2 }}>
+                        Kontoübersicht
                     </Typography>
                     <Box component="form" sx={{ mt: 3 }}>
                         <Grid container spacing={2}>
@@ -287,6 +358,37 @@ export default function KontoUebersicht() {
                                     Daten laden
                                 </Button>
                             </Grid>
+                            <Grid item xs={12}  >
+                                <Typography
+                                    sx={{
+                                        fontSize: '1.2rem',
+                                        textAlign: 'center',
+                                        mb: 1
+                                    }}>
+                                    Benutzertyp
+                                </Typography>
+                                <Typography
+                                    sx={{
+                                        fontSize: '1.5rem',
+                                        color: '#003eb0',
+                                        fontWeight: 'bold',
+                                        textAlign: 'center',
+                                    }}>
+
+                                    {user.type}
+                                </Typography>
+                                {user.type == "Partner" ?
+                                    <Typography
+                                        sx={{
+                                            fontSize: '1.1rem',
+                                            color: '#003eb0',
+                                            // fontWeight: '',
+                                            textAlign: 'center',
+                                        }}>
+
+                                        {user.details.name + " - " + user.details.currency + " - " + user.details.valueForToken}
+                                    </Typography> : null}
+                            </Grid>
                             <Grid item xs={12} sm={6} >
                                 <Typography
                                     sx={{
@@ -329,7 +431,7 @@ export default function KontoUebersicht() {
                 <Box
                     id="Transfer-Event"
                     sx={{
-                        width: 17/20,
+                        width: 17 / 20,
                         // maxWidth: 20 / 20,
                         // minWidth: 15 / 20,
 
@@ -363,8 +465,8 @@ export default function KontoUebersicht() {
                                         <TableCell component="th" scope="row">
                                             {row.nr}
                                         </TableCell>
-                                        <TableCell align="right">{row.from.toLowerCase() == transferAccount.toLowerCase() ? <Typography sx={{ color: "#003eb0" }}>{row.from}</Typography> : row.from}</TableCell>
-                                        <TableCell align="right">{row.to.toLowerCase() == transferAccount.toLowerCase() ? <Typography sx={{ color: "#003eb0" }} variant="body1">{row.to}</Typography> : row.to}</TableCell>
+                                        <TableCell align="right">{row.from.toLowerCase() == transferAccount.toLowerCase() ? <Typography sx={{ color: "#003eb0" }}>{row.from}</Typography> : <Typography> {row.from_info.type + ": " + row.from_info.details.name} <Typography variant="subtitle2">{row.from}</Typography> </Typography>}</TableCell>
+                                        <TableCell align="right">{row.to.toLowerCase() == transferAccount.toLowerCase() ? <Typography sx={{ color: "#003eb0" }} variant="body1">{row.to}</Typography> : <div><Typography>{row.to_info.type + ": " + row.to_info.details.name}</Typography> <Typography variant="subtitle2">{row.to}</Typography></div>}</TableCell>
                                         <TableCell align="right">{row.value}</TableCell>
                                     </TableRow>
                                 ))}
@@ -377,7 +479,7 @@ export default function KontoUebersicht() {
                     sx={{
                         // maxWidth: 20 / 20,
                         // minWidth: 15 / 20,
-                        width: 17/20,
+                        width: 17 / 20,
                         bgcolor: 'background.paper',
                         borderRadius: 2,
                         p: 1,
@@ -387,17 +489,17 @@ export default function KontoUebersicht() {
                         mb: 2
                     }}>
                     <Typography component="h1" variant="h5">
-                        Meine Locks
+                        Meine Sperren
                     </Typography>
                     <Typography variant="body1">
-                       für Kunden nicht vorhanden
+                        für Kunden nicht vorhanden
                     </Typography>
                     <TableContainer component={Paper} sx={{}}>
                         <Table sx={{ minWidth: 750 }} aria-label="simple table">
                             <TableHead>
                                 <TableRow>
                                     <TableCell>Nr.</TableCell>
-                                    <TableCell align="right">Sperrer</TableCell>
+                                    <TableCell align="right">Sperrer (dieses Konto)</TableCell>
                                     <TableCell align="right">Empfänger</TableCell>
                                     <TableCell align="right">Gegenstand ID</TableCell>
                                     <TableCell align="right">Zeit der Entsperrung</TableCell>
@@ -414,7 +516,7 @@ export default function KontoUebersicht() {
                                             {row.nr}
                                         </TableCell>
                                         <TableCell align="right"> <Typography sx={{ color: "#003eb0" }}>{row.locker}</Typography> </TableCell>
-                                        <TableCell align="right">{row.receiver}</TableCell>
+                                        <TableCell align="right"><div><Typography>{row.receiver_info.type + ": " + row.receiver_info.details.name}</Typography> <Typography variant="subtitle2">{row.receiver}</Typography></div></TableCell>
                                         <TableCell align="right">{row.itemID}</TableCell>
                                         <TableCell align="right">{row.releaseTime}</TableCell>
                                         <TableCell align="right">{row.amount}</TableCell>
@@ -430,7 +532,7 @@ export default function KontoUebersicht() {
                     sx={{
                         // maxWidth: 20 / 20,
                         // minWidth: 15 / 20,
-                        width: 17/20,
+                        width: 17 / 20,
                         bgcolor: 'background.paper',
                         borderRadius: 2,
                         p: 1,
@@ -440,7 +542,7 @@ export default function KontoUebersicht() {
                         mb: 2
                     }}>
                     <Typography component="h1" variant="h5">
-                        Meine gelockte Tokens
+                        Meine gesperrte Tokens
                     </Typography>
                     <Box component="form" onSubmit={handleGetLockedItem} sx={{ my: 3, width: 1, padding: 1, border: 2, borderColor: '#e5ecf6' }}>
 
@@ -457,7 +559,7 @@ export default function KontoUebersicht() {
                                     name="lockedItem_locker"
                                     label="Sperrer (Adresse)"
                                     value={search_lockedItemLocker}
-                                    onChange={(e) => {setSearch_lockedItemLocker(e.target.value)}}
+                                    onChange={(e) => { setSearch_lockedItemLocker(e.target.value) }}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={5}>
@@ -468,9 +570,9 @@ export default function KontoUebersicht() {
                                     name="lockedItem_receiver"
                                     label="Empfänger (Adresse)"
                                     value={search_lockedItemReceiver}
-                                    onChange={(e) => {setSearch_lockedItemReceiver(e.target.value)}}
+                                    onChange={(e) => { setSearch_lockedItemReceiver(e.target.value) }}
 
-                                    
+
                                 />
                             </Grid>
                             <Grid item xs={12} sm={2}>
@@ -481,17 +583,17 @@ export default function KontoUebersicht() {
                                     name="lockedItem_id"
                                     label="Gegenstand ID"
                                     value={search_lockedItemID}
-                                    onChange={(e) => {setSearch_lockedItemID(e.target.value)}}
+                                    onChange={(e) => { setSearch_lockedItemID(e.target.value) }}
 
                                 />
                             </Grid>
                             <Grid item xs={12} sm={2}>
                                 <Button
-                                  variant="outlined"
-                                  fullWidth
-                                  sx={{
-                                      height: 1
-                                  }}
+                                    variant="outlined"
+                                    fullWidth
+                                    sx={{
+                                        height: 1
+                                    }}
                                     type="submit"
                                 >
                                     Lesen
@@ -531,7 +633,7 @@ export default function KontoUebersicht() {
                                 <TableRow>
                                     <TableCell>Nr.</TableCell>
                                     <TableCell align="right">Sperrer</TableCell>
-                                    <TableCell align="right">Empfänger</TableCell>
+                                    <TableCell align="right">Empfänger (dieses Konto)</TableCell>
                                     <TableCell align="right">Gegenstand ID</TableCell>
                                     <TableCell align="right">Zeit der Entsperrung</TableCell>
                                     <TableCell align="right">Menge</TableCell>
@@ -546,7 +648,7 @@ export default function KontoUebersicht() {
                                         <TableCell component="th" scope="row">
                                             {row.nr}
                                         </TableCell>
-                                        <TableCell align="right">{row.locker}</TableCell>
+                                        <TableCell align="right"><div><Typography>{row.locker_info.type + ": " + row.locker_info.details.name}</Typography> <Typography variant="subtitle2">{row.locker}</Typography></div></TableCell>
                                         <TableCell align="right"> <Typography sx={{ color: "#003eb0" }}>{row.receiver}</Typography></TableCell>
                                         <TableCell align="right">{row.itemID}</TableCell>
                                         <TableCell align="right">{row.releaseTime}</TableCell>
