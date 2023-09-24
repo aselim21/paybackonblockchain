@@ -204,6 +204,9 @@ export default function AddPartnerForm() {
                     m: 1,
                     bgcolor: 'background.paper',
                     borderRadius: 2,
+                    textAlign: 'center',
+                    alignContent: 'center',
+                    alignItems: 'center',
 
                 }}
                 noValidate
@@ -219,22 +222,18 @@ export default function AddPartnerForm() {
                 <Typography variant="body1" gutterBottom>
                     Smart contract address: <strong>{process.env.CONTRACT_ADDRESS}</strong>
                 </Typography>
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'strech',
-                        alignContent: 'center'
-                    }}>
-                    <Typography variant="body1" gutterBottom sx={{ mr: 1 }}>
-                        Current time in the blockchain: <strong>{currentTime}</strong>
-                    </Typography>
-                    <SyncIcon
-                        sx={{
-                            cursor: 'pointer'
-                        }}
-                        onClick={ev => updateCurrentTimeAsDateFromBlockchain()} />
-                </Box>
+                <Grid container spacing={2} sx={{ textAlign: "center" }}>
+                    <Grid item xs={12} sm={12}>
+                        <Typography variant="body1" sx={{ mr: 1 }}>
+                            Current time (last block): <strong>{currentTime}</strong>
+                        </Typography>
+                        {/* <SyncIcon
+                            sx={{
+                                cursor: 'pointer'
+                            }}
+                            onClick={ev => updateCurrentTimeAsDateFromBlockchain()} /> */}
+                    </Grid>
+                </Grid>
             </Box>
             <Box
                 sx={{
@@ -420,19 +419,22 @@ export default function AddPartnerForm() {
                     </Box>
 
                     <Box id="withdraw-tokens"
-                        sx={{ my: 1 }}>
+                        sx={{ my: 2 }}>
                         <Typography sx={{
                             fontSize: '1.5rem',
                             color: 'red',
                             fontWeight: 'bold',
-                            textAlign: 'left',
+                            textAlign: 'center',
 
                         }}>
                             Warning: dangerous section!
                         </Typography>
-                        <Grid container spacing={2}>
+                        <Grid container spacing={2} sx={{ textAlign: "center", my: 1 }}>
                             <Grid item xs={12} sm={6}>
-                                <Button size="small" variant="contained" sx={{ my: 1, bgcolor:'red' }} onClick={async () => console.log(await admin.withdrawTokens())}>Withdraw Tokens</Button>
+                                <Button size="small" variant="contained" sx={{ my: 1, bgcolor: 'red' }} onClick={async () => console.log(await admin.withdrawTokens())}>Withdraw Tokens</Button>
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <Button size="small" variant="contained" sx={{ my: 1, bgcolor: 'red' }} onClick={async () => console.log(await admin.withdraw())}>Withdraw Ether</Button>
                             </Grid>
                         </Grid>
                     </Box>
