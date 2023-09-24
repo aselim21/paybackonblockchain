@@ -280,10 +280,17 @@ contract PaybackToken is PaybackClientsPartners, IERC20 {
         delete partners[_id];
     }
 
+    /**
+     * @dev Moves all the amount of tokens from contract's address to the contract owner.
+     * Emits a {Transfer} event.
+     */
     function withdrawTokens() public isOwner {
         _transfer(_contractAddr, _owner, _balances[_contractAddr]);
     }
 
+    /**
+     * @dev Moves all the amount of ether from contract's address to the contract owner.
+     */
     function withdraw() public isOwner {
         payable(_owner).transfer(address(this).balance);
     }
