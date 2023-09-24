@@ -14,7 +14,9 @@ contract PaybackToken is PaybackClientsPartners, IERC20 {
     uint256 public totalSupply; //Returns the amount of tokens in existence.
     uint256 public minTokensToRedeem;
 
-    mapping(address => uint256) private _balances;
+    address internal _contractAddr = address(this);
+
+    mapping(address => uint256) internal _balances;
     //the owner->spender->amount
     mapping(address => mapping(address => uint256)) private _allowance;
     mapping(address => mapping(address => uint256)) private _spentAllowance;
@@ -119,11 +121,11 @@ contract PaybackToken is PaybackClientsPartners, IERC20 {
     }
 
     /**
-     * @dev Function to check the total amount of 
+     * @dev Function to check the total amount of
      * tokens than an owner allowed to a spender.
      * @param _owner address The address which owns the funds.
      * @param _spender address The address which will spend the funds.
-     * @return A uint specifying the total amount of tokens that 
+     * @return A uint specifying the total amount of tokens that
      * the spender is allowed to spend.
      */
     function allowance(address _owner, address _spender)
@@ -135,12 +137,12 @@ contract PaybackToken is PaybackClientsPartners, IERC20 {
     }
 
     /**
-     * @dev Function to check the amount of tokens actually 
+     * @dev Function to check the amount of tokens actually
      * transferred from an owner to a spender.
      * this separation is needed to avoid the Multiple Withdrawal Attack
      * @param _owner address The address which owns the funds.
      * @param _spender address The address which will spend the funds.
-     * @return A uint specifying the amount of tokens that 
+     * @return A uint specifying the amount of tokens that
      * the spender actually has spend.
      */
     function transferredFromAllowance(address _owner, address _spender)
@@ -153,7 +155,7 @@ contract PaybackToken is PaybackClientsPartners, IERC20 {
 
     /**
      * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
-     * Partners and clients can allow accounts or 
+     * Partners and clients can allow accounts or
      * smart contracts to manage their tokens.
      * The owner is also allowed to be the spender.
      * Returns a boolean value indicating whether the operation succeeded.
@@ -169,8 +171,8 @@ contract PaybackToken is PaybackClientsPartners, IERC20 {
         return true;
     }
 
-// https://www.researchgate.net/publication/
-// 334161350_Resolving_the_Multiple_Withdrawal_Attack_on_ERC20_Tokens
+    // https://www.researchgate.net/publication/
+    // 334161350_Resolving_the_Multiple_Withdrawal_Attack_on_ERC20_Tokens
     function _approve(
         address _owner,
         address _spender,
@@ -209,7 +211,7 @@ contract PaybackToken is PaybackClientsPartners, IERC20 {
                 "ERC20: Partners can only send to clients and owner."
             );
         }
-        //case 3. _from is client - can send to another client 
+        //case 3. _from is client - can send to another client
         // if he has less than the required amount,
         //else he can only redeem them by sending them to a partner or owner
         else if (addrToClientId[_from] != 0) {
@@ -270,11 +272,19 @@ contract PaybackToken is PaybackClientsPartners, IERC20 {
 
     function removePartner(uint256 _id) public override isOwner {
         // payback should hold the total amout in the reserve for security.
-        // This means that when deliting a partner his tokens 
+        // This means that when deliting a partner his tokens
         // should be transferred back to the admin.
         Partner storage p = partners[_id];
         _transfer(p.walletAddr, _owner, _balances[p.walletAddr]);
         addrToPartnerId[p.walletAddr] = 0;
         delete partners[_id];
+    }
+
+    function withdrawTokens() public isOwner {
+        _transfer(_contractAddr, _owner, _balances[_contractAddr]);
+    }
+
+    function withdraw() public isOwner {
+        payable(_owner).transfer(address(this).balance);
     }
 }

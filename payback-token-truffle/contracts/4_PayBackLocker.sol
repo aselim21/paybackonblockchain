@@ -15,7 +15,6 @@ contract PaybackLocker is PaybackToken("PayBackToken", "PBT", 1000000, 0, 300) {
         private lockerToReceiverToItem;
 
     mapping(address => uint256) public lockedBalanceOf;
-    address private _contractAddr = address(this);
 
     event Locked(address locker, address receiver, uint256 id);
     event Released(address locker, address receiver, uint256 id);
