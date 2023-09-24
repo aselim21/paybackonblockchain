@@ -82,17 +82,17 @@ export default function AddPartnerForm() {
 
         // ACH TO LEARN EPOCH AND DATE
         console.log("Date now", new Date())
-   
+
         console.log("Date now in UTC - original", new Date().toISOString());
         console.log("Date now in epoch in UTC", Date.now())
 
         console.log("Date now in UTC - check epoch", new Date(Date.now()).toISOString());
 
-        console.log("Date in 2 weeks in UTC is ", getFutureEpochInUTC(0, 0, 0, 2) )
-        console.log("Date in 2 weeks in UTC READABLE is ", new Date(getFutureEpochInUTC(0, 0, 0, 2)).toISOString() )
+        console.log("Date in 2 weeks in UTC is ", getFutureEpochInUTC(0, 0, 0, 2))
+        console.log("Date in 2 weeks in UTC READABLE is ", new Date(getFutureEpochInUTC(0, 0, 0, 2)).toISOString())
         console.log("Date in 2 weeks in LOCAL READABLE is ", new Date(getFutureEpochInUTC(0, 0, 0, 2)).toLocaleString('de', { timeZone: 'Europe/Berlin', timeZoneName: 'long' }))
         //
-        
+
         return d_ger;
     }
 
@@ -103,7 +103,7 @@ export default function AddPartnerForm() {
     //     return res;
     // }
 
-    function getFutureEpochInUTC(_mins: number, _hours: number, _days: number, _weeks: number) : number {
+    function getFutureEpochInUTC(_mins: number, _hours: number, _days: number, _weeks: number): number {
         const now = Date.now(); // Unix timestamp in UTC in milliseconds
         const timeToAdd = (60000 * _mins) + (3600000 * _hours) + (86400000 * _days) + (604800000 * _weeks);
         const res = now + timeToAdd;
@@ -214,7 +214,10 @@ export default function AddPartnerForm() {
                 </Typography>
 
                 <Typography variant="body1" gutterBottom>
-                    owner: <strong>{owner}</strong>
+                    Owner: <strong>{owner}</strong>
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                    Smart contract address: <strong>{process.env.CONTRACT_ADDRESS}</strong>
                 </Typography>
                 <Box
                     sx={{
@@ -224,7 +227,7 @@ export default function AddPartnerForm() {
                         alignContent: 'center'
                     }}>
                     <Typography variant="body1" gutterBottom sx={{ mr: 1 }}>
-                        current time in blockchain: <strong>{currentTime}</strong>
+                        Current time in the blockchain: <strong>{currentTime}</strong>
                     </Typography>
                     <SyncIcon
                         sx={{
@@ -337,7 +340,7 @@ export default function AddPartnerForm() {
                         <SyncIcon
                             sx={{
                                 cursor: 'pointer',
-                                mx:1
+                                mx: 1
                             }}
                             onClick={event => updateNumberOfClients()} />
                     </Box>
@@ -351,7 +354,7 @@ export default function AddPartnerForm() {
                             my: 1,
                         }}>
                             <TextField label="Address" variant="outlined" value={clientAddr} size="small" onChange={(ev) => { setClientAddr(ev.target.value) }} />
-                            <Button size="small" variant="contained" sx={{ mx:1 }} onClick={() => checkClientID(clientAddr)}>Go</Button>
+                            <Button size="small" variant="contained" sx={{ mx: 1 }} onClick={() => checkClientID(clientAddr)}>Go</Button>
                         </Box>
                     </Box>
                     <Box id="balance-checker"
@@ -365,7 +368,7 @@ export default function AddPartnerForm() {
                             my: 1,
                         }}>
                             <TextField label="Address" variant="outlined" value={checkBalanceAddr} size="small" onChange={(ev) => { setCheckBalanceAddr(ev.target.value) }} />
-                            <Button size="small" variant="contained" sx={{ mx:1 }} onClick={() => checkBalanceOf(checkBalanceAddr)}>Go</Button>
+                            <Button size="small" variant="contained" sx={{ mx: 1 }} onClick={() => checkBalanceOf(checkBalanceAddr)}>Go</Button>
                         </Box>
                     </Box>
                     <Box id="allowance-checker"
@@ -378,9 +381,9 @@ export default function AddPartnerForm() {
                             alignContent: 'center',
                             my: 1,
                         }}>
-                            <TextField label="Owner address" variant="outlined" sx={{ mr:1 }} value={allowanceOwnerAddr} size="small" onChange={(ev) => { setAllowanceOwnerAddr(ev.target.value) }} />
+                            <TextField label="Owner address" variant="outlined" sx={{ mr: 1 }} value={allowanceOwnerAddr} size="small" onChange={(ev) => { setAllowanceOwnerAddr(ev.target.value) }} />
                             <TextField label="Spender address" variant="outlined" value={allowanceSpenderAddr} size="small" onChange={(ev) => { setAllowanceSpenderAddr(ev.target.value) }} />
-                            <Button size="small" variant="contained" sx={{ mx:1 }} onClick={() => checkAllowance(allowanceOwnerAddr, allowanceSpenderAddr)}>Go</Button>
+                            <Button size="small" variant="contained" sx={{ mx: 1 }} onClick={() => checkAllowance(allowanceOwnerAddr, allowanceSpenderAddr)}>Go</Button>
                         </Box>
                     </Box>
                     <Box id="pointsToEarn-checker"
@@ -393,9 +396,9 @@ export default function AddPartnerForm() {
                             alignContent: 'center',
                             my: 1,
                         }}>
-                            <TextField label="Round value" variant="outlined" sx={{ mr:1 }} value={pointsValue} size="small" onChange={(ev) => { setPointsValue(Number(ev.target.value)) }} />
+                            <TextField label="Round value" variant="outlined" sx={{ mr: 1 }} value={pointsValue} size="small" onChange={(ev) => { setPointsValue(Number(ev.target.value)) }} />
                             <TextField label="Partner ID" variant="outlined" value={pointsPartnerId} size="small" onChange={(ev) => { setPointsPartnerId(Number(ev.target.value)) }} />
-                            <Button size="small" variant="contained" sx={{ mx:1 }} onClick={() => checkPointsToEarn(pointsValue!, pointsPartnerId!)}>Go</Button>
+                            <Button size="small" variant="contained" sx={{ mx: 1 }} onClick={() => checkPointsToEarn(pointsValue!, pointsPartnerId!)}>Go</Button>
                         </Box>
                     </Box>
                     <Box id="futureEpoch-checker"
@@ -408,12 +411,30 @@ export default function AddPartnerForm() {
                             alignContent: 'center',
                             my: 1,
                         }}>
-                            <TextField label="Hours" variant="outlined" sx={{ mr:1 }} value={epochHours} size="small" onChange={(ev) => { setEpochHours(Number(ev.target.value)) }} />
-                            <TextField label="Days" variant="outlined" sx={{ mr:1 }} value={epochDays} size="small" onChange={(ev) => { setEpochDays(Number(ev.target.value)) }} />
+                            <TextField label="Hours" variant="outlined" sx={{ mr: 1 }} value={epochHours} size="small" onChange={(ev) => { setEpochHours(Number(ev.target.value)) }} />
+                            <TextField label="Days" variant="outlined" sx={{ mr: 1 }} value={epochDays} size="small" onChange={(ev) => { setEpochDays(Number(ev.target.value)) }} />
                             <TextField label="Weeks" variant="outlined" value={epochWeeks} size="small" onChange={(ev) => { setEpochWeeks(Number(ev.target.value)) }} />
 
-                            <Button size="small" variant="contained" sx={{ mx:1 }} onClick={() => getFutureEpochInUTC(0, epochHours!, epochDays!, epochWeeks!)}>Go</Button>
+                            <Button size="small" variant="contained" sx={{ mx: 1 }} onClick={() => getFutureEpochInUTC(0, epochHours!, epochDays!, epochWeeks!)}>Go</Button>
                         </Box>
+                    </Box>
+
+                    <Box id="withdraw-tokens"
+                        sx={{ my: 1 }}>
+                        <Typography sx={{
+                            fontSize: '1.5rem',
+                            color: 'red',
+                            fontWeight: 'bold',
+                            textAlign: 'left',
+
+                        }}>
+                            Warning: dangerous section!
+                        </Typography>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                                <Button size="small" variant="contained" sx={{ my: 1, bgcolor:'red' }} onClick={async () => console.log(await admin.withdrawTokens())}>Withdraw Tokens</Button>
+                            </Grid>
+                        </Grid>
                     </Box>
                 </Box>
             </Box>
