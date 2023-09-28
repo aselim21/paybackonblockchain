@@ -1,25 +1,39 @@
-# PayBackOnBlockchain
-
-## How to test the system
+# PaybackOnBlockchain
 
 Install Metamask and create a account.
 
-Go to https://sepoliafaucet.com/, create an account and get some test tokens.
+## How to test the system on local network
 
-## How to run the code
+### Set up
 
-1. ``cd payback-token-truffle``
-2. ```
-   npm i
-   ```
-3. Check if code compiles with ``truffle compile``
-4. ``truffle develop``
-5. Copy the private key of the last Account and import this account in your metamask wallet in the browser.
-6. ``migrate --network development --reset``
-7. Go to ./test
-8. Fix the smart contract address in the next.config.js file
-9. run the live server for the html files `npm run dev`
-10. You may need to fix the network in your metamask. Make sure you are connected to http://localhost:9545 with chainID 1337 (even though truffle says its 5777)
+1. Install [Node.js](https://nodejs.org/en/download/current "https://nodejs.org/en/download/current") on your computer.
+2. Install Truffle by running `npm install -g truffle` in a terminal.
+3. Install the [Metamask wallet extension](https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn "https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn") on your browser and create an account.
+4. Download this repository.
+
+### Run code
+
+#### Deploy the smart contracts
+
+1. Open the project in VS Code or other editor.
+2. Navigate to the truffle project folder in the terminal `cd payback-token-truffle`
+3. Run this command to install all truffle dependecies `npm install`
+4. Run  `truffle develop`
+5. Copy the private key of the last Account with id (9) from the terminal and import this account into your metamask wallet in the browser. [MetaMask Support: How to import an account](https://support.metamask.io/hc/en-us/articles/360015489331-How-to-import-an-account#h_01G01W07NV7Q94M7P1EBD5BYM4 "https://support.metamask.io/hc/en-us/articles/360015489331-How-to-import-an-account#h_01G01W07NV7Q94M7P1EBD5BYM4")
+6. Change the network in your Metamask Wallet to Localhost 9545
+
+![Local Network Settings](images/Metamask-howToLocalNetwork.png "Local Network Settings")
+
+7. Run this command to deploy the smart contracts in a local blockchain ``migrate --network development --reset``
+
+#### **Start the frontend**
+
+1. Copy the *contract address* from the terminal output of the previous step.
+2. Open the next.config.js file in the /frontend folder and update the CONTRACT_ADDRESS variable with the copied value.
+3. Open a new termial.
+4. Navigate to the frontend folder in the terminal `cd frontend`
+5. Run this command to install all frontend dependecies `npm install`
+6. Run this command to start the frontend `npm run dev`
 
 ## User Stories
 
