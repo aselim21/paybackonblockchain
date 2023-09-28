@@ -4,10 +4,7 @@
 
 This project is part of a bachelor thesis for the ***University of Technology, Arts, Sciences in Cologne, Germany***.
 
-Total supply of the PBT (PayBackToken) is 1 000 000 (1M) with no decimals.
-1 Token is worth 1 Cent,
-10 Tokens = 10 Cent
-100 Tokens = 1 Euro
+Total supply of the PBT (PayBackToken) is 1 000 000 (1M) with no decimals. 1 Token is worth 1 Cent, 10 Tokens = 10 Cent, 100 Tokens = 1 Euro
 
 ## How to test the system on local network
 
