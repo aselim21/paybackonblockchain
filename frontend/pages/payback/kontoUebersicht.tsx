@@ -317,8 +317,6 @@ export default function KontoUebersicht() {
                     </Typography>
                     <Box component="form" sx={{ mt: 3 }}>
                         <Grid container spacing={2}>
-
-
                             <Grid item xs={12} sm={8}>
                                 <TextField
                                     // multiline

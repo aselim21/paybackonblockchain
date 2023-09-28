@@ -395,7 +395,7 @@ export default function AddPartnerForm() {
                             alignContent: 'center',
                             my: 1,
                         }}>
-                            <TextField label="Round value" variant="outlined" sx={{ mr: 1 }} value={pointsValue} size="small" onChange={(ev) => { setPointsValue(Number(ev.target.value)) }} />
+                            <TextField label="Round value (EUR)" variant="outlined" sx={{ mr: 1 }} value={pointsValue} size="small" onChange={(ev) => { setPointsValue(Number(ev.target.value)) }} />
                             <TextField label="Partner ID" variant="outlined" value={pointsPartnerId} size="small" onChange={(ev) => { setPointsPartnerId(Number(ev.target.value)) }} />
                             <Button size="small" variant="contained" sx={{ mx: 1 }} onClick={() => checkPointsToEarn(pointsValue!, pointsPartnerId!)}>Go</Button>
                         </Box>
@@ -427,7 +427,7 @@ export default function AddPartnerForm() {
                             textAlign: 'center',
 
                         }}>
-                            Warning: dangerous section!
+                            Warning: dangerous zone!
                         </Typography>
                         <Grid container spacing={2} sx={{ textAlign: "center", my: 1 }}>
                             <Grid item xs={12} sm={6}>
