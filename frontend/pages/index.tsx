@@ -30,15 +30,21 @@ export default function Home() {
         <Typography variant="h2" sx={{ color: "white", alignSelf: "center", my: 2 }}>Payback on Blockchain</Typography>
       </AppBar>
 
-      <Grid container spacing={2} sx={{ my: 10, textAlign:"center" }}>
+      <Grid container spacing={2} sx={{ my: 10, textAlign: "center" }}>
         <Grid item xs={12} sm={12} >
-          <Button variant="contained" sx={{ bgcolor: "#002C7D", py: 2, width: "50%"}} >Payback Admin</Button>
+          <Button variant="contained" sx={{ bgcolor: "#002C7D", py: 2, width: "50%" }} onClick={event => window.location.href = 'payback-admin'} autoFocus>
+            Payback Admin
+          </Button>
         </Grid>
         <Grid item xs={12} sm={12} sx={{ mt: 2 }}>
-          <Button variant="contained" sx={{ bgcolor: "#003eb0", py: 2, width: "50%" }} >Payback (public)</Button>
+          <Button variant="contained" sx={{ bgcolor: "#003eb0", py: 2, width: "50%" }} onClick={event => window.location.href = 'payback'} autoFocus>
+            Payback (public)
+          </Button>
         </Grid>
         <Grid item xs={12} sm={12} sx={{ mt: 2 }}>
-          <Button variant="contained" sx={{ bgcolor: "#ee161f", py: 2, width: "50%" }} >Kaufland (Partner)</Button>
+          <Button variant="contained" sx={{ bgcolor: "#ee161f", py: 2, width: "50%" }} onClick={event => window.location.href = 'kaufland'} autoFocus>
+            Kaufland (Partner)
+          </Button>
         </Grid>
       </Grid>
       <Box sx={{
@@ -46,6 +52,7 @@ export default function Home() {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        mb: 2
       }}>
         <Typography variant="h5">Accounts for testing purposes:</Typography>
         <Typography variant="body1">
