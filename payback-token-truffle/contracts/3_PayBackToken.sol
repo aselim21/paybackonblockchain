@@ -64,11 +64,10 @@ contract PaybackToken is PaybackClientsPartners, IERC20 {
      * transfers and fire the Transfer event.
      */
 
-    function transfer(address _to, uint256 _amount)
-        public
-        addrNotNull(_to)
-        returns (bool)
-    {
+    function transfer(
+        address _to,
+        uint256 _amount
+    ) public addrNotNull(_to) returns (bool) {
         if (msg.sender == _owner) {
             require(
                 addrToPartnerId[_to] != 0,
@@ -128,11 +127,10 @@ contract PaybackToken is PaybackClientsPartners, IERC20 {
      * @return A uint specifying the total amount of tokens that
      * the spender is allowed to spend.
      */
-    function allowance(address _owner, address _spender)
-        public
-        view
-        returns (uint256)
-    {
+    function allowance(
+        address _owner,
+        address _spender
+    ) public view returns (uint256) {
         return _allowance[_owner][_spender];
     }
 
@@ -145,11 +143,10 @@ contract PaybackToken is PaybackClientsPartners, IERC20 {
      * @return A uint specifying the amount of tokens that
      * the spender actually has spend.
      */
-    function transferredFromAllowance(address _owner, address _spender)
-        public
-        view
-        returns (uint256)
-    {
+    function transferredFromAllowance(
+        address _owner,
+        address _spender
+    ) public view returns (uint256) {
         return _spentAllowance[_owner][_spender];
     }
 
