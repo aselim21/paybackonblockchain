@@ -1,23 +1,13 @@
 import * as React from 'react';
 import {
-    AppBar,
     Box,
-    Toolbar,
-    IconButton,
     Typography,
-    Menu,
-    Container,
-    Avatar,
     Button,
-    Tooltip,
-    MenuItem,
-    CssBaseline,
     Grid,
     TextField,
     Dialog,
     DialogActions,
     DialogContent,
-    DialogContentText,
     DialogTitle,
     Paper,
     Table,
@@ -26,16 +16,15 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Checkbox,
-    FormControlLabel,
-    FormGroup
-
 } from '@mui/material';
 import Navbar from './components/navbar';
+import TransferDialog from './components/transferDialog';
+import TransferFromDialog from './components/transferFromDialog';
+import ApproveDialog from './components/approveDialog';
+import LockDialog from './components/lockDialog';
 import PBT_basicReader from '../../public/PBT_basicReader';
 import { useState, useEffect } from "react";
 import Web3 from "web3";
-
 
 export default function KontoUebersicht() {
     const PBT_reader = new PBT_basicReader();
@@ -49,6 +38,7 @@ export default function KontoUebersicht() {
     const [search_lockedItemReceiver, setSearch_lockedItemReceiver] = React.useState<string>("");
     const [search_lockedItemID, setSearch_lockedItemID] = React.useState<string>("");
     const [user, setUser] = useState<any>("...");
+    const [openDialog, setOpenDialog] = useState<string | null>(null);
 
     const delayLoading = 1500;
 
@@ -62,8 +52,7 @@ export default function KontoUebersicht() {
 
     let accounts: string[];
 
-    const [message, setMessage] = React.useState<string[]>(["", ""]);
-    const [resultIs, setResultIs] = React.useState<boolean | null>(null);
+
     const [balance, setBalance] = React.useState<number>(0);
     const [lockedBalance, setLockedBalance] = React.useState<number>(0);
 
@@ -423,6 +412,83 @@ export default function KontoUebersicht() {
                                     {lockedBalance}
                                 </Typography>
                             </Grid>
+                            <Grid item xs={12} sm={3} alignSelf="end">
+                                <Typography textAlign="center">{
+                                    user.type == "Kunde" ? "Der Kunde kann PBT an andere Kunden senden, nur wenn sein Kontostand kleiner als 300 ist." :
+                                        user.type == "Partner" ? "Der Partner kann PBT an Kunden oder den Vertragseigentümer senden." :
+                                            ""
+                                } </Typography>
+                                <Button
+                                    disabled={user.type == null || user.type == "nicht erkannt"}
+                                    variant="contained"
+                                    fullWidth
+                                    sx={{
+                                        height: "3rem",
+                                        bgcolor: "#f68614",
+                                    }}
+                                    onClick={(ev) => setOpenDialog("Transfer")}
+                                >
+                                    Transfer Tokens
+                                </Button>
+                            </Grid>
+                            <Grid item xs={12} sm={3} alignSelf="end">
+                                <Typography textAlign="center">{
+                                    user.type == "Kunde" ? "Jeder kann Spender werden." :
+                                        user.type == "Partner" ? "Jeder kann Spender werden." :
+                                            ""
+                                } </Typography>
+                                <Button
+                                    disabled={user.type == null || user.type == "nicht erkannt"}
+                                    variant="contained"
+                                    fullWidth
+                                    sx={{
+                                        height: "3rem",
+                                        bgcolor: "#f68614",
+                                    }}
+                                    onClick={(ev) => setOpenDialog("Approve")}
+                                >
+                                    Approve
+                                </Button>
+                            </Grid>
+                            <Grid item xs={12} sm={3} alignSelf="end">
+                                <Typography textAlign="center">{
+                                    user.type == "Kunde" ? "Möglich nur wenn der Kunde eine Zulassung hat." :
+                                        user.type == "Partner" ? "Möglich nur wenn der Partner eine Zulassung hat." :
+                                        user.type == null ? "":
+                                        "Möglich nur wenn diese Addresse eine Zulassung hat."
+                                } </Typography>
+                                <Button
+                                    disabled={user.type == null}
+                                    variant="contained"
+                                    fullWidth
+                                    sx={{
+                                        height: "3rem",
+                                        bgcolor: "#f68614"
+                                    }}
+                                    onClick={(ev) => setOpenDialog("TransferFrom")}
+                                >
+                                    Transfer Tokens From
+                                </Button>
+                            </Grid>
+                            <Grid item xs={12} sm={3} alignSelf="end">
+                                <Typography textAlign="center">{
+                                    user.type == "Kunde" ? "Der Kunde kann seine Tokens nicht sperren." :
+                                        user.type == "Partner" ? "Nur der Partner und der Vertragseigentümer können ihre Tokens sperren." :
+                                            ""
+                                } </Typography>
+                                <Button
+                                    disabled={user.type == null || user.type == "nicht erkannt" || user.type == "Kunde"}
+                                    variant="contained"
+                                    fullWidth
+                                    sx={{
+                                        height: "3rem",
+                                        bgcolor: "#f68614"
+                                    }}
+                                    onClick={(ev) => setOpenDialog("Lock")}
+                                >
+                                    Lock Tokens
+                                </Button>
+                            </Grid>
                         </Grid>
                     </Box>
                 </Box>
@@ -661,33 +727,28 @@ export default function KontoUebersicht() {
             </Box>
 
             <Dialog
-                open={resultIs != null}
+                open={openDialog != null}
                 // onClose={handleClose}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
             >
                 <DialogTitle id="alert-dialog-title">
-                    {message[0]}
+                    {openDialog}
                 </DialogTitle>
                 <DialogContent>
-                    <DialogContentText id="alert-dialog-description">
-                        {message[1]}
-                    </DialogContentText>
+                    {
+                        openDialog == "Transfer" ? <TransferDialog /> :
+                            openDialog == "Approve" ? <ApproveDialog /> :
+                                openDialog == "Lock" ? <LockDialog /> :
+                                    openDialog == "TransferFrom" ? <TransferFromDialog /> :
+                                        "Diese Funktionalität ist noch nicht vorhanden."
+                    }
                 </DialogContent>
                 <DialogActions>
-                    {resultIs ?
-                        <div>
-                            <Button onClick={event => window.location.href = 'dashboard'} autoFocus>
-                                Zum Dashboard
-                            </Button>
-                            <Button onClick={() => { setResultIs(null) }}>
-                                Schließen
-                            </Button>
-                        </div>
-                        :
-                        <Button autoFocus onClick={() => { setResultIs(null) }}>
-                            Schließen
-                        </Button>}
+                    <Button onClick={() => { setOpenDialog(null) }}>
+                        Schließen
+                    </Button>
+
                 </DialogActions>
             </Dialog>
         </>
