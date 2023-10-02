@@ -8,7 +8,8 @@ import {
 import { LoadingButton } from '@mui/lab';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Web3 from "web3";
-import abi from '../../../public/ABI_PayBackToken.json';
+import PBT_MetaMask from '../../../public/PBT_MetaMask';
+
 
 const ThemePayback = createTheme({
     palette: {
@@ -40,37 +41,22 @@ export default function TransferDialog() {
         const data = new FormData(event.currentTarget);
         const req_data = {
             addr: data.get("receiver_addr")?.toString(),
-            amount: data.get("amount")?.toString()
+            amount: data.get("amount")
         }
         console.log(req_data);
         try {
             const web3 = new Web3(window.ethereum);
             const accounts = await web3.eth.getAccounts();
             const account = accounts[0];
-            const contract = new web3.eth.Contract(abi, process.env.CONTRACT_ADDRESS);
-
-            //calculate gas and gas price
-            const gasLimitBuffer = 1.2; // 20% buffer
-            const gasPriceBuffer = 1.5; // 50% buffer
-
-            const gasEstimate : bigint = await contract.methods.transfer(req_data.addr, req_data.amount).estimateGas({ from: account });
-            const gasPrice : bigint = await web3.eth.getGasPrice();
-            
-            const finalGasLimit : number = Math.ceil(Number(gasEstimate) * gasLimitBuffer);
-            const finalGasPrice : number = Math.ceil(Number(gasPrice) * gasPriceBuffer);
-
-            const result = await contract.methods.transfer(req_data.addr, req_data.amount).send({
-                from: account,
-                gas: finalGasLimit.toString(),
-                gasPrice: finalGasPrice.toString(),
-            });
-            console.log('Transaction result:', result);
+            const metamask_actor = new PBT_MetaMask(account);
+            const res = await metamask_actor.transfer(req_data.addr!, Number(req_data.amount));
+            console.log(res);
             setLoading(false);
         } catch (error) {
             console.error(error);
             setLoading(false);
         }
-    };
+    }
 
     return (
         <ThemeProvider theme={ThemePayback}>

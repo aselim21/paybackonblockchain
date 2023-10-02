@@ -29,29 +29,41 @@ import Web3 from "web3";
 export default function KontoUebersicht() {
     const PBT_reader = new PBT_basicReader();
     const [account, setAccount] = useState<string>("");
+    const [user, setUser] = useState<any>("...");
+    const [openDialog, setOpenDialog] = useState<string | null>(null);
+
     const [rows_Transfer, setRows_Transfer] = React.useState<any[]>([]);
-    const [transferAccount, setTransferAccount] = useState<string>("");
-    const [resItem, setResItem] = React.useState<{ amount: number, releaseDate: string }>({ amount: 0, releaseDate: "" });
     const [rows_MyDetailedLocks, setRows_MyDetailedLocks] = React.useState<any[]>([]);
     const [rows_MyLockedItemsDetailed, setRows_MyLockedItemsDetailed] = React.useState<any[]>([]);
+    const [rows_Approval, setRows_Approval] = React.useState<any[]>([]);
+
+    const [transferAccount, setTransferAccount] = useState<string>("");
+    const [approvalAccount, setApprovalAccount] = useState<string>("");
+
     const [search_lockedItemLocker, setSearch_lockedItemLocker] = React.useState<string>("");
     const [search_lockedItemReceiver, setSearch_lockedItemReceiver] = React.useState<string>("");
     const [search_lockedItemID, setSearch_lockedItemID] = React.useState<string>("");
-    const [user, setUser] = useState<any>("...");
-    const [openDialog, setOpenDialog] = useState<string | null>(null);
+    const [resItem, setResItem] = React.useState<{ amount: number, releaseDate: string }>({ amount: 0, releaseDate: "" });
+
+    const [search_allowanceOwner, setSearch_allowanceOwner] = React.useState<string>("");
+    const [search_allowanceSpender, setSearch_allowanceSpender] = React.useState<string>("");
+    const [resAllowance, setResAllowance] = React.useState<{ total: number, transferred: number, left: number }>({ total: 0, transferred: 0, left: 0 });
+
+    const [metaMaskConn, setMetaMaskConn] = React.useState<boolean>(false);
 
     const delayLoading = 1500;
 
     let rowNr_Transfer = 0;
     let rowNr_MyDetailerLocks = 0;
     let rowNr_MyLockedItemsDetailed = 0;
+    let rowNr_Approval = 0;
 
     let allEvents_Transfer: any[] = [];
     let myDetailedLocks: any[] = [];
     let myLockedItemsDetailed: any[] = [];
+    let allEvents_Approval: any[] = [];
 
     let accounts: string[];
-
 
     const [balance, setBalance] = React.useState<number>(0);
     const [lockedBalance, setLockedBalance] = React.useState<number>(0);
@@ -83,8 +95,22 @@ export default function KontoUebersicht() {
             }
         }
     }
+    async function checkIfconnectedWithMetamask(): Promise<boolean> {
+        const web3 = new Web3(window.ethereum);
+        const accounts_MetaMask = await web3.eth.getAccounts();
+        const account_MetaMask = accounts_MetaMask[0]
+
+        if (account_MetaMask.toLowerCase() == account.toLowerCase())
+            return true
+        return false
+    }
 
     async function handleDatenLaden() {
+
+        //check if the user is connected with metamask
+        const _metaMaskConn = await checkIfconnectedWithMetamask();
+        console.log("Is there a Connection with Metamask? ", _metaMaskConn);
+        setMetaMaskConn(_metaMaskConn);
 
         //get usertype
         const user = await getUserDetail(account);
@@ -100,16 +126,24 @@ export default function KontoUebersicht() {
         setLockedBalance(lockedBalance);
 
         setRows_Transfer([]);
-        setTransferAccount("");
         setRows_MyDetailedLocks([]);
         setRows_MyLockedItemsDetailed([]);
-        setResItem({ amount: 0, releaseDate: "" });
+        setRows_Approval([]);
+
+        setTransferAccount("");
+
         setSearch_lockedItemLocker("");
         setSearch_lockedItemReceiver("");
         setSearch_lockedItemID("");
+        setResItem({ amount: 0, releaseDate: "" });
+
+        setSearch_allowanceOwner("");
+        setSearch_allowanceSpender("");
+        setResAllowance({ total: 0, transferred: 0, left: 0 });
 
         await loadMyTransfers(account);
         await loadALLLocksDetailed(account);
+        await loadMyApprovals(account);
     }
 
     const handleGetLockedItem = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -125,6 +159,21 @@ export default function KontoUebersicht() {
         setResItem({ amount: res.amount, releaseDate: res.releaseDate == 0 ? "0" : epochInUTC_GermanDate(res.releaseDate * 1000) })
 
     };
+
+    const handleGetAllowance = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        const req_data = {
+            owner: data.get("allowance_owner")?.toString(),
+            spender: data.get("allowance_spender")?.toString(),
+        }
+        if (!!!req_data.owner || !!!req_data.spender) return;
+        const allowance = await PBT_reader.getAllowance(req_data.owner, req_data.spender);
+        const transferredAllowance = await PBT_reader.getTransferredFromAllowance(req_data.owner, req_data.spender);
+        setResAllowance({ total: allowance, transferred: transferredAllowance, left: (allowance - transferredAllowance) })
+
+    };
+
     async function getUserDetail(_addr: string): Promise<{ type: string, details: { name: string, currency: string, valueForToken: string } }> {
         //check if its partner
         console.log("checking for user", _addr)
@@ -199,6 +248,62 @@ export default function KontoUebersicht() {
             });
             setTimeout(() => {
                 setRows_Transfer(allEvents_Transfer)
+            }, delayLoading);
+        } catch (err: any) {
+            console.error("Couldn't subscribe", err);
+            return err;
+        }
+    }
+
+    async function loadMyApprovals(_addr: string) {
+        try {
+            setApprovalAccount(_addr);
+            const eventHandler = PBT_reader.PayBackContract.events["Approval"]({
+                fromBlock: 0, // The block number from which to start listening (optional)
+                toBlock: 'latest', // The block number at which to stop listening (optional)
+            });
+            eventHandler.on('data', async (eventData: any) => {
+                console.log("These are all the transfer events")
+                console.log("owner" + eventData.returnValues.owner + "spender" + eventData.returnValues.spender)
+
+                if (eventData.returnValues.owner.toLowerCase() == _addr.toLowerCase()) {
+                    console.log("I am the from address")
+                    console.log("Checking who is the to")
+                    const spender = await getUserDetail(eventData.returnValues.spender);
+                    if (spender.type != "nicht erkannt") {
+                        allEvents_Approval.push({
+                            nr: ++rowNr_Approval,
+                            owner: eventData.returnValues.owner,
+                            owner_info: "",
+                            spender: eventData.returnValues.spender,
+                            spender_info: spender,
+                            value: Number(eventData.returnValues.value)
+                        })
+                        // setRows_Transfer(allEvents_Transfer)
+                    }
+                }
+                //if i am _to => check who is _from
+                else if (eventData.returnValues.spender.toLowerCase() == _addr.toLowerCase()) {
+                    const owner = await getUserDetail(eventData.returnValues.owner);
+                    if (owner.type != "nicht erkannt") {
+                        allEvents_Approval.push({
+                            nr: ++rowNr_Approval,
+                            owner: eventData.returnValues.owner,
+                            owner_info: owner,
+                            spender: eventData.returnValues.spender,
+                            spender_info: "",
+                            value: Number(eventData.returnValues.value)
+                        })
+                        // setRows_Transfer(allEvents_Transfer)
+                    }
+                }
+            });
+            eventHandler.on('error', (error: any) => {
+                // Handle errors here
+                console.error('Error:', error);
+            });
+            setTimeout(() => {
+                setRows_Approval(allEvents_Approval)
             }, delayLoading);
         } catch (err: any) {
             console.error("Couldn't subscribe", err);
@@ -293,7 +398,7 @@ export default function KontoUebersicht() {
                 <Box
                     sx={{
                         maxWidth: 13 / 20,
-                        minWidth: 8 / 20,
+                        minWidth: 10 / 20,
                         bgcolor: 'background.paper',
                         borderRadius: 2,
                         p: 1,
@@ -305,7 +410,7 @@ export default function KontoUebersicht() {
                     <Typography component="h1" variant="h5" sx={{ mt: 2 }}>
                         Kontoübersicht
                     </Typography>
-                    <Box component="form" sx={{ mt: 3 }}>
+                    <Box component="form" sx={{ mt: 3 }} >
                         <Grid container spacing={2}>
                             <Grid item xs={12} sm={8}>
                                 <TextField
@@ -346,153 +451,176 @@ export default function KontoUebersicht() {
                                     Daten laden
                                 </Button>
                             </Grid>
-                            <Grid item xs={12}  >
+                  
+             
+                        <Grid item xs={12}  >
+                            <Typography
+                                sx={{
+                                    fontSize: '1.2rem',
+                                    textAlign: 'center',
+                                    mb: 1
+                                }}>
+                                Benutzertyp
+                            </Typography>
+                            <Typography
+                                sx={{
+                                    fontSize: '1.5rem',
+                                    color: '#003eb0',
+                                    fontWeight: 'bold',
+                                    textAlign: 'center',
+                                }}>
+
+                                {user.type}
+                            </Typography>
+                            {user.type == "Partner" ?
                                 <Typography
                                     sx={{
-                                        fontSize: '1.2rem',
-                                        textAlign: 'center',
-                                        mb: 1
-                                    }}>
-                                    Benutzertyp
-                                </Typography>
-                                <Typography
-                                    sx={{
-                                        fontSize: '1.5rem',
+                                        fontSize: '1.1rem',
                                         color: '#003eb0',
-                                        fontWeight: 'bold',
+                                        // fontWeight: '',
                                         textAlign: 'center',
                                     }}>
 
-                                    {user.type}
-                                </Typography>
-                                {user.type == "Partner" ?
-                                    <Typography
-                                        sx={{
-                                            fontSize: '1.1rem',
-                                            color: '#003eb0',
-                                            // fontWeight: '',
-                                            textAlign: 'center',
-                                        }}>
-
-                                        {user.details.name + " - " + user.details.currency + " - " + user.details.valueForToken}
-                                    </Typography> : null}
-                            </Grid>
-                            <Grid item xs={12} sm={6} >
-                                <Typography
-                                    sx={{
-                                        fontSize: '1.2rem',
-                                        textAlign: 'center',
-                                    }}>
-                                    Kontostand
-                                </Typography>
-                                <Typography
-                                    sx={{
-                                        fontSize: '6rem',
-                                        color: '#003eb0',
-                                        fontWeight: 'bold',
-                                        textAlign: 'center',
-                                    }}>
-                                    {balance}
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <Typography
-                                    sx={{
-                                        fontSize: '1.2rem',
-                                        textAlign: 'center',
-                                    }}>
-                                    Gesperrte Tokens
-                                </Typography>
-                                <Typography
-                                    sx={{
-                                        fontSize: '6rem',
-                                        color: '#4075c0',
-                                        fontWeight: 'bold',
-                                        textAlign: 'center',
-                                    }}>
-                                    {lockedBalance}
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={12} sm={3} alignSelf="end">
-                                <Typography textAlign="center">{
-                                    user.type == "Kunde" ? "Der Kunde kann PBT an andere Kunden senden, nur wenn sein Kontostand kleiner als 300 ist." :
-                                        user.type == "Partner" ? "Der Partner kann PBT an Kunden oder den Vertragseigentümer senden." :
-                                            ""
-                                } </Typography>
-                                <Button
-                                    disabled={user.type == null || user.type == "nicht erkannt"}
-                                    variant="contained"
-                                    fullWidth
-                                    sx={{
-                                        height: "3rem",
-                                        bgcolor: "#f68614",
-                                    }}
-                                    onClick={(ev) => setOpenDialog("Transfer")}
-                                >
-                                    Transfer Tokens
-                                </Button>
-                            </Grid>
-                            <Grid item xs={12} sm={3} alignSelf="end">
-                                <Typography textAlign="center">{
-                                    user.type == "Kunde" ? "Jeder kann Spender werden." :
-                                        user.type == "Partner" ? "Jeder kann Spender werden." :
-                                            ""
-                                } </Typography>
-                                <Button
-                                    disabled={user.type == null || user.type == "nicht erkannt"}
-                                    variant="contained"
-                                    fullWidth
-                                    sx={{
-                                        height: "3rem",
-                                        bgcolor: "#f68614",
-                                    }}
-                                    onClick={(ev) => setOpenDialog("Approve")}
-                                >
-                                    Approve
-                                </Button>
-                            </Grid>
-                            <Grid item xs={12} sm={3} alignSelf="end">
-                                <Typography textAlign="center">{
-                                    user.type == "Kunde" ? "Möglich nur wenn der Kunde eine Zulassung hat." :
-                                        user.type == "Partner" ? "Möglich nur wenn der Partner eine Zulassung hat." :
-                                        user.type == null ? "":
-                                        "Möglich nur wenn diese Addresse eine Zulassung hat."
-                                } </Typography>
-                                <Button
-                                    disabled={user.type == null}
-                                    variant="contained"
-                                    fullWidth
-                                    sx={{
-                                        height: "3rem",
-                                        bgcolor: "#f68614"
-                                    }}
-                                    onClick={(ev) => setOpenDialog("TransferFrom")}
-                                >
-                                    Transfer Tokens From
-                                </Button>
-                            </Grid>
-                            <Grid item xs={12} sm={3} alignSelf="end">
-                                <Typography textAlign="center">{
-                                    user.type == "Kunde" ? "Der Kunde kann seine Tokens nicht sperren." :
-                                        user.type == "Partner" ? "Nur der Partner und der Vertragseigentümer können ihre Tokens sperren." :
-                                            ""
-                                } </Typography>
-                                <Button
-                                    disabled={user.type == null || user.type == "nicht erkannt" || user.type == "Kunde"}
-                                    variant="contained"
-                                    fullWidth
-                                    sx={{
-                                        height: "3rem",
-                                        bgcolor: "#f68614"
-                                    }}
-                                    onClick={(ev) => setOpenDialog("Lock")}
-                                >
-                                    Lock Tokens
-                                </Button>
-                            </Grid>
+                                    {user.details.name + " - " + user.details.currency + " - " + user.details.valueForToken}
+                                </Typography> : null}
                         </Grid>
+                        <Grid item xs={12} sm={6} >
+                            <Typography
+                                sx={{
+                                    fontSize: '1.2rem',
+                                    textAlign: 'center',
+                                }}>
+                                Kontostand
+                            </Typography>
+                            <Typography
+                                sx={{
+                                    fontSize: '6rem',
+                                    color: '#003eb0',
+                                    fontWeight: 'bold',
+                                    textAlign: 'center',
+                                }}>
+                                {balance}
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <Typography
+                                sx={{
+                                    fontSize: '1.2rem',
+                                    textAlign: 'center',
+                                }}>
+                                Gesperrte Tokens
+                            </Typography>
+                            <Typography
+                                sx={{
+                                    fontSize: '6rem',
+                                    color: '#4075c0',
+                                    fontWeight: 'bold',
+                                    textAlign: 'center',
+                                }}>
+                                {lockedBalance}
+                            </Typography>
+                        </Grid>
+                    
+                   
+                        <Grid item xs={15} sm={3} alignSelf="end">
+                            <Typography textAlign="center">{
+                                user.type == "Kunde" ? "Der Kunde kann PBT an andere Kunden senden, nur wenn sein Kontostand kleiner als 300 ist." :
+                                    user.type == "Partner" ? "Der Partner kann PBT an Kunden oder den Vertragseigentümer senden." :
+                                        ""
+                            } </Typography>
+                            <Button
+                                disabled={user.type == null || user.type == "nicht erkannt" || !metaMaskConn}
+                                variant="contained"
+                                fullWidth
+                                sx={{
+                                    height: "3rem",
+                                    bgcolor: "#f68614",
+                                }}
+                                onClick={(ev) => setOpenDialog("Transfer")}
+                            >
+                                Transfer Tokens
+                            </Button>
+                        </Grid>
+                        <Grid item xs={15} sm={3} alignSelf="end">
+                            <Typography textAlign="center">{
+                                user.type == "Kunde" ? "Jeder kann Spender werden." :
+                                    user.type == "Partner" ? "Jeder kann Spender werden." :
+                                        ""
+                            } </Typography>
+                            <Button
+                                disabled={user.type == null || user.type == "nicht erkannt" || !metaMaskConn}
+                                variant="contained"
+                                fullWidth
+                                sx={{
+                                    height: "3rem",
+                                    bgcolor: "#f68614",
+                                }}
+                                onClick={(ev) => setOpenDialog("Approve")}
+                            >
+                                Approve
+                            </Button>
+                        </Grid>
+                        <Grid item xs={15} sm={3} alignSelf="end">
+                            <Typography textAlign="center">{
+                                user.type == "Kunde" ? "Möglich nur wenn der Kunde eine Zulassung hat." :
+                                    user.type == "Partner" ? "Möglich nur wenn der Partner eine Zulassung hat." :
+                                        user.type == null ? "" :
+                                            "Möglich nur wenn diese Addresse eine Zulassung hat."
+                            } </Typography>
+                            <Button
+                                disabled={user.type == null || !metaMaskConn}
+                                variant="contained"
+                                fullWidth
+                                sx={{
+                                    height: "3rem",
+                                    bgcolor: "#f68614"
+                                }}
+                                onClick={(ev) => setOpenDialog("TransferFrom")}
+                            >
+                                Transfer Tokens From
+                            </Button>
+                        </Grid>
+                        <Grid item xs={15} sm={3} alignSelf="end">
+                            <Typography textAlign="center">{
+                                user.type == "Kunde" ? "Der Kunde kann seine Tokens nicht sperren." :
+                                    user.type == "Partner" ? "Nur der Partner und der Vertragseigentümer können ihre Tokens sperren." :
+                                        ""
+                            } </Typography>
+                            <Button
+                                disabled={user.type == null || user.type == "nicht erkannt" || user.type == "Kunde" || !metaMaskConn}
+                                variant="contained"
+                                fullWidth
+                                sx={{
+                                    height: "3rem",
+                                    bgcolor: "#f68614"
+                                }}
+                                onClick={(ev) => setOpenDialog("Lock")}
+                            >
+                                Lock Tokens
+                            </Button>
+                        </Grid>
+                        {/* <Grid item xs={15} sm={3} alignSelf="end">
+                            <Typography textAlign="center">{
+                                user.type == "Kunde" ? "Der Kunde kann seine Tokens nicht sperren." :
+                                    user.type == "Partner" ? "Nur der Partner und der Vertragseigentümer können ihre Tokens sperren." :
+                                        ""
+                            } </Typography>
+                            <Button
+                                disabled={user.type == null || user.type == "nicht erkannt" || user.type == "Kunde" || !metaMaskConn}
+                                variant="contained"
+                                fullWidth
+                                sx={{
+                                    height: "3rem",
+                                    bgcolor: "#f68614"
+                                }}
+                                onClick={(ev) => setOpenDialog("LockReduce")}
+                            >
+                                Lock Tokens
+                            </Button>
+                        </Grid> */}
+                         </Grid>
                     </Box>
-                </Box>
+                </Box >
                 <Box
                     id="Transfer-Event"
                     sx={{
@@ -530,7 +658,7 @@ export default function KontoUebersicht() {
                                         <TableCell component="th" scope="row">
                                             {row.nr}
                                         </TableCell>
-                                        <TableCell align="right">{row.from.toLowerCase() == transferAccount.toLowerCase() ? <Typography sx={{ color: "#003eb0" }}>{row.from}</Typography> : <Typography> {row.from_info.type + ": " + row.from_info.details.name} <Typography variant="subtitle2">{row.from}</Typography> </Typography>}</TableCell>
+                                        <TableCell align="right">{row.from.toLowerCase() == transferAccount.toLowerCase() ? <Typography sx={{ color: "#003eb0" }}>{row.from}</Typography> : <div> <Typography> {row.from_info.type + ": " + row.from_info.details.name} </Typography> <Typography variant="subtitle2">{row.from}</Typography></div>}</TableCell>
                                         <TableCell align="right">{row.to.toLowerCase() == transferAccount.toLowerCase() ? <Typography sx={{ color: "#003eb0" }} variant="body1">{row.to}</Typography> : <div><Typography>{row.to_info.type + ": " + row.to_info.details.name}</Typography> <Typography variant="subtitle2">{row.to}</Typography></div>}</TableCell>
                                         <TableCell align="right">{row.value}</TableCell>
                                     </TableRow>
@@ -725,7 +853,132 @@ export default function KontoUebersicht() {
                         </Table>
                     </TableContainer>
                 </Box>
-            </Box>
+                <Box
+                    id="Transfer-Event"
+                    sx={{
+                        width: 17 / 20,
+                        bgcolor: 'background.paper',
+                        borderRadius: 2,
+                        p: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        mb: 2
+                    }}>
+                    <Typography component="h1" variant="h5">
+                        Meine Zulassungen
+                    </Typography>
+                    <Box component="form" onSubmit={handleGetAllowance} sx={{ my: 3, width: 1, padding: 1, border: 2, borderColor: '#e5ecf6' }}>
+
+                        <Typography variant='h6' sx={{ mb: 2 }}>
+                            Information über die Zulassung abfragen
+                        </Typography>
+
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    required
+                                    fullWidth
+                                    id="allowance_owner"
+                                    name="allowance_owner"
+                                    label="Eigentümer (Adresse)"
+                                    value={search_allowanceOwner}
+                                    onChange={(e) => { setSearch_allowanceOwner(e.target.value) }}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    required
+                                    fullWidth
+                                    id="allowance_spender"
+                                    name="allowance_spender"
+                                    label="Spender (Adresse)"
+                                    value={search_allowanceSpender}
+                                    onChange={(e) => { setSearch_allowanceSpender(e.target.value) }}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={3}>
+                                <Button
+                                    variant="outlined"
+                                    fullWidth
+                                    sx={{
+                                        height: 1
+                                    }}
+                                    type="submit"
+                                >
+                                    Lesen
+                                </Button>
+                            </Grid>
+                            <Grid item xs={12} sm={3}>
+                                <TextField
+                                    variant='standard'
+                                    fullWidth
+                                    id="allowance_total"
+                                    name="allowance_total"
+                                    label="Gesamte Zulassung"
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                    value={resAllowance.total}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={3}>
+                                <TextField
+                                    variant='standard'
+                                    fullWidth
+                                    id="allowance_transferred"
+                                    name="allowance_transferred"
+                                    label="Benutzte Zulassung"
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                    value={resAllowance.transferred}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={3}>
+                                <TextField
+                                    variant='standard'
+                                    fullWidth
+                                    id="allowance_left"
+                                    name="allowance_left"
+                                    label="Restliche Zulassung"
+                                    InputProps={{
+                                        readOnly: true,
+                                    }}
+                                    value={resAllowance.left}
+                                />
+                            </Grid>
+                        </Grid>
+                    </Box>
+                    <TableContainer component={Paper} sx={{}}>
+                        <Table sx={{ minWidth: 750 }} aria-label="simple table">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Nr.</TableCell>
+                                    <TableCell align="right">Eigentümer</TableCell>
+                                    <TableCell align="right">Spender</TableCell>
+                                    <TableCell align="right">Menge</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {rows_Approval.map((row: any) => (
+                                    <TableRow
+                                        key={row.nr}
+                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                    >
+                                        <TableCell component="th" scope="row">
+                                            {row.nr}
+                                        </TableCell>
+                                        <TableCell align="right">{row.owner.toLowerCase() == approvalAccount.toLowerCase() ? <Typography sx={{ color: "#003eb0" }}>{row.owner}</Typography> : <div> <Typography> {row.owner_info.type + ": " + row.owner_info.details.name} </Typography> <Typography variant="subtitle2">{row.owner}</Typography></div>}</TableCell>
+                                        <TableCell align="right">{row.spender.toLowerCase() == approvalAccount.toLowerCase() ? <Typography sx={{ color: "#003eb0" }} variant="body1">{row.spender}</Typography> : <div><Typography>{row.spender_info.type + ": " + row.spender_info.details.name}</Typography> <Typography variant="subtitle2">{row.spender}</Typography></div>}</TableCell>
+                                        <TableCell align="right">{row.value}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Box>
+            </Box >
 
             <Dialog
                 open={openDialog != null}
