@@ -56,7 +56,7 @@ export default function ShoppingCart() {
 
     async function handleConnectMetamask() {
         try {
-            // window.ethereum.enable().then(async () => {
+            window.ethereum.enable().then(async () => {
             const web3 = new Web3(window.ethereum);
             accounts = await web3.eth.getAccounts();
             // accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -76,7 +76,7 @@ export default function ShoppingCart() {
                 console.log("disconnect");
                 setAccount("");
             });
-            // });
+            });
         } catch (error: any) {
             if (error.message === "User denied account authorization") {
                 // handle the case where the user denied the connection request

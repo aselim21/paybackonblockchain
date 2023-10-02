@@ -58,6 +58,7 @@ export default function KontoUebersicht() {
 
     async function handleConnectMetamask() {
         try {
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
             const web3 = new Web3(window.ethereum);
             accounts = await web3.eth.getAccounts();
             setAccount(accounts[0]);
