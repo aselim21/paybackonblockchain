@@ -99,9 +99,10 @@ export default function KontoUebersicht() {
         const web3 = new Web3(window.ethereum);
         const accounts_MetaMask = await web3.eth.getAccounts();
         const account_MetaMask = accounts_MetaMask[0]
-
-        if (account_MetaMask.toLowerCase() == account.toLowerCase())
+        if(account_MetaMask){
+            if (account_MetaMask.toLowerCase() == account.toLowerCase())
             return true
+        }
         return false
     }
 
