@@ -32,4 +32,20 @@ contract Owner {
     function getOwner() external view returns (address) {
         return _owner;
     }
+
+    /**
+     * @dev Transfer ownership to a new address
+     * @param newOwner The address of the new owner
+     */
+    function transferOwnership(address newOwner) external isOwner addrNotNull(newOwner) {
+        _owner = newOwner;
+    }
+
+    /**
+     * @dev Renounce ownership of the contract
+     * Leaves the contract without an owner
+     */
+    function renounceOwnership() external isOwner {
+        _owner = address(0);
+    }
 }
