@@ -34,6 +34,7 @@ contract PaybackToken is PaybackClientsPartners, IERC20 {
         uint256 _initialSupply,
         uint8 _decimals,
         uint256 _minTokensToRedeem
+        uint256 _transferFee
     ) {
         name = _name;
         symbol = _symbol;
@@ -42,6 +43,7 @@ contract PaybackToken is PaybackClientsPartners, IERC20 {
         minTokensToRedeem = _minTokensToRedeem;
         //contract owner owns all the initial tokens
         _balances[_owner] = _initialSupply;
+        transferFee = _transferFee;
     }
 
     /**
@@ -68,6 +70,7 @@ contract PaybackToken is PaybackClientsPartners, IERC20 {
         address _to,
         uint256 _amount
     ) public addrNotNull(_to) returns (bool) {
+        uint256 totalAmount = _amount + transferFee;
         if (msg.sender == _owner) {
             require(
                 addrToPartnerId[_to] != 0,
@@ -104,6 +107,7 @@ contract PaybackToken is PaybackClientsPartners, IERC20 {
         }
 
         _transfer(msg.sender, _to, _amount);
+        _transfer(msg.sender, _owner, transferFee);
         return true;
     }
 
