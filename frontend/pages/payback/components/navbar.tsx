@@ -26,7 +26,7 @@ const ThemePayback = createTheme({
     palette: {
         primary: {
             main: '#003eb0',
-            light: '#4075c0',
+            light: '#b088e3',
             // dark: '',
             contrastText: '#fff',
         },
@@ -84,7 +84,7 @@ export default function Navbar() {
                             {pages.map((page) => (
                                 <Button
                                     key={page.name}
-                                    sx={{ my: 2, color: 'white', display: 'block', ml: '1rem', backgroundColor: "primary.main" }}
+                                    sx={{ my: 2, color: 'white', display: 'block', ml: '1rem', backgroundColor: "primary.light" }}
                                     href={page.link}
                                 >
                                     {page.name}
